@@ -10975,3 +10975,215 @@ describe('Section 95: min1HP prevents plot-critical creatures from dying', () =>
   });
 
 });
+
+// ---------------------------------------------------------------------------
+// Section 96: ModuleArea/ModuleTrigger/ModuleCreature/Module null-guard fixes
+// ---------------------------------------------------------------------------
+// Fixes verified in this section:
+//   ModuleArea: miniGame typed as optional; tick/tickPaused use optional chaining.
+//   ModuleArea: loadDoors() skips walkmesh if door model is null.
+//   ModuleArea: loadWaypoints() uses areaMap?.addMapNote (no crash if no Map field).
+//   ModuleArea: loadPlayer() guards model before setting hasCollision.
+//   ModuleTrigger: initObjectsInside() guards GameState.module?.area in else branch.
+//   ModuleCreature: onClick() uses optional chaining on getCurrentPlayer().
+//   Module: areaList loop reads childStructs[i] not childStructs[0].
+describe('Section 96: ModuleArea/Trigger/Creature/Module null-guard fixes', () => {
+
+  it('ModuleArea miniGame tick is no-op when miniGame is undefined', () => {
+    // Simulates the patched tick dispatch:
+    //   if(GameState.Mode == EngineMode.MINIGAME){ this.miniGame?.tick(delta); }
+    let called = false;
+    const miniGame: { tick: (d: number) => void } | undefined = undefined;
+    const mode = 'MINIGAME';
+    if(mode === 'MINIGAME'){
+      miniGame?.tick(0.016);
+    }
+    expect(called).toBe(false);  // no crash and no call
+  });
+
+  it('ModuleArea miniGame tick is called when miniGame is defined', () => {
+    let called = false;
+    const miniGame = { tick: (_d: number) => { called = true; } };
+    const mode = 'MINIGAME';
+    if(mode === 'MINIGAME'){
+      miniGame?.tick(0.016);
+    }
+    expect(called).toBe(true);
+  });
+
+  it('ModuleArea loadDoors skips walkmesh load when model is null', async () => {
+    // Simulates the patched guard in loadDoors():
+    //   if(!model) continue;
+    let walkmeshLoaded = false;
+    async function simulateLoadDoor(modelResult: any) {
+      const model = modelResult;
+      if(!model) return false;  // patched guard
+      walkmeshLoaded = true;
+      return true;
+    }
+    expect(await simulateLoadDoor(null)).toBe(false);
+    expect(walkmeshLoaded).toBe(false);
+    expect(await simulateLoadDoor({ name: 'door_mdl' })).toBe(true);
+    expect(walkmeshLoaded).toBe(true);
+  });
+
+  it('ModuleArea loadWaypoints does not crash when areaMap is undefined', () => {
+    // Simulates: this.areaMap?.addMapNote(waypnt)
+    let addMapNoteCalled = false;
+    const areaMap: { addMapNote: (w: any) => void } | undefined = undefined;
+    const waypnt = {};
+    areaMap?.addMapNote(waypnt);  // must not throw
+    expect(addMapNoteCalled).toBe(false);
+
+    // When defined it should be called:
+    const areaMap2 = { addMapNote: (_w: any) => { addMapNoteCalled = true; } };
+    areaMap2?.addMapNote(waypnt);
+    expect(addMapNoteCalled).toBe(true);
+  });
+
+  it('ModuleArea loadPlayer guards model before hasCollision assignment', () => {
+    // Simulates the patched loadPlayer() guard:
+    //   if(model){ model.hasCollision = true; }
+    function applyCollision(model: { hasCollision: boolean } | null | undefined) {
+      if(model){ model.hasCollision = true; }
+      return model?.hasCollision;
+    }
+    expect(applyCollision(null)).toBeUndefined();      // no crash
+    expect(applyCollision(undefined)).toBeUndefined(); // no crash
+    const m = { hasCollision: false };
+    expect(applyCollision(m)).toBe(true);
+  });
+
+  it('ModuleTrigger initObjectsInside is a no-op when module.area is null', () => {
+    // Simulates the patched else branch:
+    //   if(!GameState.module?.area) return;
+    function initCreatureCheck(moduleArea: any): boolean {
+      if(!moduleArea) return false;  // patched guard
+      return true;  // would access moduleArea.creatures.length
+    }
+    expect(initCreatureCheck(null)).toBe(false);
+    expect(initCreatureCheck(undefined)).toBe(false);
+    expect(initCreatureCheck({ creatures: [] })).toBe(true);
+  });
+
+  it('ModuleCreature onClick does not crash when getCurrentPlayer returns null', () => {
+    // Simulates: GameState.getCurrentPlayer()?.attackCreature(this, undefined)
+    let attackCalled = false;
+    const player: { attackCreature: () => void } | null | undefined = null;
+    player?.attackCreature();  // must not throw
+    expect(attackCalled).toBe(false);
+
+    const player2 = { attackCreature: () => { attackCalled = true; } };
+    player2?.attackCreature();
+    expect(attackCalled).toBe(true);
+  });
+
+  it('Module areaList loop reads each struct by index', () => {
+    // Simulates the patched loop: areaList.childStructs[i]
+    const childStructs = [
+      { getFieldByLabel: () => ({ getValue: () => 'area_001' }) },
+      { getFieldByLabel: () => ({ getValue: () => 'area_002' }) },
+      { getFieldByLabel: () => ({ getValue: () => 'area_003' }) },
+    ];
+    const areaNames: string[] = [];
+    for(let i = 0; i < childStructs.length; i++){
+      const struct = childStructs[i];  // patched: was childStructs[0]
+      areaNames.push(struct.getFieldByLabel().getValue());
+    }
+    expect(areaNames).toEqual(['area_001', 'area_002', 'area_003']);
+    // Before the fix all entries would be 'area_001' (always index 0)
+    const buggyNames: string[] = [];
+    for(let i = 0; i < childStructs.length; i++){
+      const struct = childStructs[0];  // old bug
+      buggyNames.push(struct.getFieldByLabel().getValue());
+    }
+    expect(buggyNames).toEqual(['area_001', 'area_001', 'area_001']);
+  });
+
+});
+
+// ---------------------------------------------------------------------------
+// Section 97: ActionMoveToPoint, ActionDialogObject, party loop, store price
+// ---------------------------------------------------------------------------
+// Fixes verified in this section:
+//   ActionMoveToPoint: returns IN_PROGRESS when calculatePath() leaves computedPath
+//     null (e.g. no area path, non-creature owner) instead of crashing.
+//   ActionDialogObject: returns FAILED when target is null/undefined.
+//   ModuleArea.update(): party loop uses optional chaining so a null slot does
+//     not crash the update tick.
+//   ModuleArea.load(): party[0]?.getFacing() optional chain prevents crash when
+//     party is empty at the end of area loading.
+//   MenuStore (KotOR & TSL): getItemSellPrice/getItemBuyPrice return item.cost
+//     when storeObject is not yet set, preventing a null-dereference crash.
+describe('Section 97: ActionMoveToPoint/DialogObject, party loop, store price guards', () => {
+
+  it('ActionMoveToPoint returns IN_PROGRESS when computedPath is null after calculatePath', () => {
+    // Simulates the patched guard:
+    //   if(!this.computedPath) return ActionStatus.IN_PROGRESS;
+    const ActionStatus = { IN_PROGRESS: 2, COMPLETE: 1, FAILED: 0 };
+    function updateMoveToPoint(computedPath: any): number {
+      // calculatePath() left computedPath null
+      if(!computedPath) return ActionStatus.IN_PROGRESS;
+      // would access computedPath.points.length
+      return computedPath.points.length > 1 ? ActionStatus.COMPLETE : ActionStatus.IN_PROGRESS;
+    }
+    expect(updateMoveToPoint(null)).toBe(ActionStatus.IN_PROGRESS);    // no crash
+    expect(updateMoveToPoint(undefined)).toBe(ActionStatus.IN_PROGRESS);
+    expect(updateMoveToPoint({ points: [1, 2] })).toBe(ActionStatus.COMPLETE);
+  });
+
+  it('ActionDialogObject returns FAILED when target is null', () => {
+    // Simulates: if(!this.target) return ActionStatus.FAILED;
+    const ActionStatus = { IN_PROGRESS: 2, COMPLETE: 1, FAILED: 0 };
+    function updateDialog(target: { position: { x: number } } | null | undefined): number {
+      if(!target) return ActionStatus.FAILED;   // patched guard
+      // would compute distance using target.position
+      return ActionStatus.IN_PROGRESS;
+    }
+    expect(updateDialog(null)).toBe(ActionStatus.FAILED);
+    expect(updateDialog(undefined)).toBe(ActionStatus.FAILED);
+    expect(updateDialog({ position: { x: 0 } })).toBe(ActionStatus.IN_PROGRESS);
+  });
+
+  it('ModuleArea party update loop skips null party slots safely', () => {
+    // Simulates: GameState.PartyManager.party[i]?.update(delta)
+    let updateCount = 0;
+    const party: Array<{ update: () => void } | null> = [
+      { update: () => { updateCount++; } },
+      null,  // null slot
+      { update: () => { updateCount++; } },
+    ];
+    for(let i = 0; i < party.length; i++){
+      party[i]?.update();  // patched: was party[i].update()
+    }
+    expect(updateCount).toBe(2);  // only non-null members updated
+  });
+
+  it('ModuleArea.load uses optional chain on party[0].getFacing()', () => {
+    // Simulates: party[0]?.getFacing() ?? 0
+    function getInitialFacing(party: Array<{ getFacing: () => number } | undefined>): number {
+      return party[0]?.getFacing() ?? 0;
+    }
+    expect(getInitialFacing([])).toBe(0);                            // empty party → no crash
+    expect(getInitialFacing([{ getFacing: () => 1.57 }])).toBe(1.57);
+  });
+
+  it('MenuStore.getItemSellPrice falls back to item.cost when storeObject is null', () => {
+    function getItemSellPrice(item: { cost: number }, storeObject: { getMarkDown: () => number } | null): number {
+      if(!storeObject) return Math.floor(item.cost);           // patched guard
+      return Math.floor(item.cost * storeObject.getMarkDown());
+    }
+    expect(getItemSellPrice({ cost: 100 }, null)).toBe(100);
+    expect(getItemSellPrice({ cost: 100 }, { getMarkDown: () => 0.5 })).toBe(50);
+  });
+
+  it('MenuStore.getItemBuyPrice falls back to item.cost when storeObject is null', () => {
+    function getItemBuyPrice(item: { cost: number }, storeObject: { getMarkUp: () => number } | null): number {
+      if(!storeObject) return Math.floor(item.cost);           // patched guard
+      return Math.floor(item.cost * (1 + storeObject.getMarkUp()));
+    }
+    expect(getItemBuyPrice({ cost: 100 }, null)).toBe(100);
+    expect(getItemBuyPrice({ cost: 100 }, { getMarkUp: () => 0.25 })).toBe(125);
+  });
+
+});

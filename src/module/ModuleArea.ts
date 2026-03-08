@@ -116,7 +116,7 @@ export class ModuleArea extends ModuleObject {
   triggers: ModuleTrigger[] = [];
   waypoints: ModuleWaypoint[] = [];
   areaOfEffects: ModuleAreaOfEffect[] = [];
-  miniGame: ModuleMiniGame;
+  miniGame: ModuleMiniGame | undefined;
   walkmesh_rooms: ModuleRoom[] = [];
 
   scriptResRefs: Map<AreaScriptKeys, string> = new Map<AreaScriptKeys, string>();
@@ -426,7 +426,7 @@ export class ModuleArea extends ModuleObject {
 
     //update party
     for(let i = 0; i < partyCount; i++){
-      GameState.PartyManager.party[i].update(delta);
+      GameState.PartyManager.party[i]?.update(delta);
     }
     
     //update creatures
@@ -446,11 +446,11 @@ export class ModuleArea extends ModuleObject {
 
     //unset party controlled
     for(let i = 0; i < partyCount; i++){
-      GameState.PartyManager.party[i].controlled = false;
+      if(GameState.PartyManager.party[i]) GameState.PartyManager.party[i].controlled = false;
     }
 
     if(GameState.Mode == EngineMode.MINIGAME){
-      this.miniGame.tick(delta);
+      this.miniGame?.tick(delta);
     }
 
     //update rooms
@@ -557,7 +557,7 @@ export class ModuleArea extends ModuleObject {
     }
 
     if(GameState.Mode == EngineMode.MINIGAME){
-      this.miniGame.tickPaused(delta);
+      this.miniGame?.tickPaused(delta);
     }
 
     //update rooms
@@ -1397,7 +1397,7 @@ export class ModuleArea extends ModuleObject {
 
       GameState.MenuManager.LoadScreen.setProgress(100);
 
-      FollowerCamera.facing = Utility.NormalizeRadian(GameState.PartyManager.party[0].getFacing() - Math.PI/2);
+      FollowerCamera.facing = Utility.NormalizeRadian((GameState.PartyManager.party[0]?.getFacing() ?? 0) - Math.PI/2);
 
       try { await this.weather.load(); } catch(e){ console.error(e); }
 
@@ -1596,7 +1596,9 @@ export class ModuleArea extends ModuleObject {
         try{
           const model = await GameState.PartyManager.Player.loadModel();
           GameState.PartyManager.Player.model = model;
-          GameState.PartyManager.Player.model.hasCollision = true;
+          if(model){
+            GameState.PartyManager.Player.model.hasCollision = true;
+          }
           //let spawnLoc = this.getSpawnLocation();
           let spawnLoc = GameState.PartyManager.GetSpawnLocation(GameState.PartyManager.Player);
           GameState.PartyManager.Player.position.copy(spawnLoc.position);
@@ -1746,6 +1748,7 @@ export class ModuleArea extends ModuleObject {
         door.rotation.set(0, 0, door.getBearing());
         const model = await door.loadModel();
         door.computeBoundingBox();
+        if(!model) continue;
         const dwk = await door.loadWalkmesh(model.name);
 
         try{
@@ -1876,7 +1879,7 @@ export class ModuleArea extends ModuleObject {
           }
         }
         wpObj.userData.area = _currentRoom;
-        this.areaMap.addMapNote(waypnt);
+        this.areaMap?.addMapNote(waypnt);
       }catch(e){
         console.error('loadWaypoints error', e);
       }
