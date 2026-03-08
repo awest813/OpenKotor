@@ -917,6 +917,7 @@ export class ModuleCreature extends ModuleObject {
     const secondaryRange = this.getPerceptionRangeSecondary();
 
     //Check modules creatures
+    if(!GameState.module?.area) return;
     let creatureLen = GameState.module.area.creatures.length;
     for(let i = 0; i < creatureLen; i++ ){
       let creature = GameState.module.area.creatures[i];
@@ -1245,7 +1246,7 @@ export class ModuleCreature extends ModuleObject {
       action.setParameter(0, ActionParameterType.FLOAT, target.position.x);
       action.setParameter(1, ActionParameterType.FLOAT, target.position.y);
       action.setParameter(2, ActionParameterType.FLOAT, target.position.z);
-      action.setParameter(3, ActionParameterType.DWORD, GameState.module.area.id);
+      action.setParameter(3, ActionParameterType.DWORD, (this.area ?? GameState.module?.area)?.id ?? 0);
       action.setParameter(4, ActionParameterType.DWORD, target.id);
       action.setParameter(5, ActionParameterType.INT, bRun ? 1 : 0);
       action.setParameter(6, ActionParameterType.FLOAT, Math.max(1.5, distance));
@@ -1279,7 +1280,7 @@ export class ModuleCreature extends ModuleObject {
         action.setParameter(0, ActionParameterType.FLOAT, position.x);
         action.setParameter(1, ActionParameterType.FLOAT, position.y);
         action.setParameter(2, ActionParameterType.FLOAT, position.z);
-        action.setParameter(3, ActionParameterType.DWORD, GameState.module.area.id);
+        action.setParameter(3, ActionParameterType.DWORD, (this.area ?? GameState.module?.area)?.id ?? 0);
         action.setParameter(4, ActionParameterType.DWORD, 0xFFFFFFFF);
         action.setParameter(5, ActionParameterType.INT, run ? 1 : 0);
         action.setParameter(6, ActionParameterType.FLOAT, Math.max(1.5, maxDistance));
@@ -1297,7 +1298,7 @@ export class ModuleCreature extends ModuleObject {
     if(target instanceof EngineLocation || target instanceof ModuleObject){
 
       let distance = 0.1;
-      let creatures = GameState.module.area.creatures;
+      let creatures = GameState.module?.area?.creatures ?? [];
 
       //Check if creatures are too close to location
       for(let i = 0; i < creatures.length; i++){
@@ -1329,7 +1330,7 @@ export class ModuleCreature extends ModuleObject {
       action.setParameter(0, ActionParameterType.FLOAT, target.position.x);
       action.setParameter(1, ActionParameterType.FLOAT, target.position.y);
       action.setParameter(2, ActionParameterType.FLOAT, target.position.z);
-      action.setParameter(3, ActionParameterType.DWORD, GameState.module.area.id);
+      action.setParameter(3, ActionParameterType.DWORD, (this.area ?? GameState.module?.area)?.id ?? 0);
       action.setParameter(4, ActionParameterType.DWORD, target instanceof EngineLocation ? ModuleObjectConstant.OBJECT_INVALID : target.id );
       action.setParameter(5, ActionParameterType.INT, bRun ? 1 : 0);
       action.setParameter(6, ActionParameterType.FLOAT, Math.max(1.5, distance));
@@ -1361,7 +1362,7 @@ export class ModuleCreature extends ModuleObject {
       action.setParameter(0, ActionParameterType.FLOAT, target.position.x);
       action.setParameter(1, ActionParameterType.FLOAT, target.position.y);
       action.setParameter(2, ActionParameterType.FLOAT, target.position.z);
-      action.setParameter(3, ActionParameterType.DWORD, GameState.module.area.id);
+      action.setParameter(3, ActionParameterType.DWORD, (this.area ?? GameState.module?.area)?.id ?? 0);
       action.setParameter(4, ActionParameterType.INT, 0);
       action.setParameter(5, ActionParameterType.FLOAT, 20.0);
       action.setParameter(6, ActionParameterType.FLOAT, target.rotation.x);
@@ -2085,8 +2086,9 @@ export class ModuleCreature extends ModuleObject {
         }
       }
       if(typeof closest != 'undefined'){
-        for(let i = 0, len = GameState.module.area.creatures.length; i < len; i++){
-          GameState.module.area.creatures[i].removeObjectFromTargetPositions(oObject);
+        const areaCreatures = GameState.module?.area?.creatures ?? [];
+        for(let i = 0, len = areaCreatures.length; i < len; i++){
+          areaCreatures[i].removeObjectFromTargetPositions(oObject);
         }
 
         for(let i = 0, len = GameState.PartyManager.party.length; i < len; i++){
@@ -2236,7 +2238,8 @@ export class ModuleCreature extends ModuleObject {
   onPositionChanged(){
     this.positionChanged = false;
     //check if the creature is inside a trigger
-    const triggers = GameState.module.area.triggers;
+    const triggers = GameState.module?.area?.triggers;
+    if(!triggers) return;
     const tLen = triggers.length;
     for(let i = 0; i < tLen; i++){
       triggers[i].updateObjectInside(this);

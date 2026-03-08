@@ -245,7 +245,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [number]){
-      GameState.module.area.unescapable = args[0] ? true : false;
+      if(GameState.module?.area) GameState.module.area.unescapable = args[0] ? true : false;
     }
   },
   15:{
@@ -254,7 +254,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.unescapable ? NW_TRUE : NW_FALSE;
+      return GameState.module?.area?.unescapable ? NW_TRUE : NW_FALSE;
     }
   },
   16:{
@@ -351,7 +351,10 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.OBJECT,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      return GameState.module.area;
+      // Return the area the object currently belongs to (object.area is set
+      // when the object is placed in an area), falling back to the active
+      // module area for objects that haven't been attached yet.
+      return args[0]?.area ?? GameState.module?.area;
     }
   },
   25:{
@@ -6365,7 +6368,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.stealthXPMax || 0;
+      return GameState.module?.area?.stealthXPMax || 0;
     }
   },
   465:{
@@ -6410,7 +6413,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [number]){
-      GameState.module.area.stealthXPMax = args[0] || 0;
+      if(GameState.module?.area) GameState.module.area.stealthXPMax = args[0] || 0;
     }
   },
   469:{
@@ -6485,7 +6488,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.stealthXPMax || 0;
+      return GameState.module?.area?.stealthXP || 0;
     }
   },
   475:{
@@ -6546,7 +6549,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [number]){
-      GameState.module.area.stealthXP = args[0] || 0;
+      if(GameState.module?.area) GameState.module.area.stealthXP = args[0] || 0;
     }
   },
   479:{
@@ -6567,7 +6570,7 @@ NWScriptDefK1.Actions = {
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
       if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleCreature)){
-        (args[0] as ModuleCreature).addXP(GameState.module.area.stealthXP, ExperienceType.STEALTH);
+        (args[0] as ModuleCreature).addXP(GameState.module?.area?.stealthXP ?? 0, ExperienceType.STEALTH);
       }
     }
   },
@@ -6577,7 +6580,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.stealthXPEnabled ? 1 : 0;
+      return GameState.module?.area?.stealthXPEnabled ? 1 : 0;
     }
   },
   482:{
@@ -6586,7 +6589,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [number]){
-      GameState.module.area.setStealthXPEnabled(!!args[0]);
+      if(GameState.module?.area) GameState.module.area.setStealthXPEnabled(!!args[0]);
     }
   },
   483:{
@@ -6805,7 +6808,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.stealthXPLoss || 0;
+      return GameState.module?.area?.stealthXPLoss || 0;
     }
   },
   499:{
@@ -6814,7 +6817,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [number]){
-      GameState.module.area.stealthXPLoss = args[0] || 0;
+      if(GameState.module?.area) GameState.module.area.stealthXPLoss = args[0] || 0;
     }
   },
   500:{
@@ -7028,7 +7031,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.VECTOR, NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [THREE.Vector3, number]){
-      GameState.module.area.areaMap.revealPosition(args[0].x, args[0].y, args[1]);
+      GameState.module?.area?.areaMap?.revealPosition(args[0].x, args[0].y, args[1]);
     }
   },
   516:{
@@ -7909,14 +7912,16 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.OBJECT,
     args: [NWScriptDataType.STRING],
     action: function(this: NWScriptInstance, args: [string]){
-      for(let i = 0, len = GameState.module.area.miniGame.obstacles.length; i < len; i++){
-        const obstacle = GameState.module.area.miniGame.obstacles[i];
+      const miniGame = GameState.module?.area?.miniGame;
+      if(!miniGame) return undefined;
+      for(let i = 0, len = miniGame.obstacles.length; i < len; i++){
+        const obstacle = miniGame.obstacles[i];
         if(obstacle.name == args[0]){
           return obstacle;
         }
       }
-      for(let i = 0, len = GameState.module.area.miniGame.enemies.length; i < len; i++){
-        const enemy = GameState.module.area.miniGame.enemies[i];
+      for(let i = 0, len = miniGame.enemies.length; i < len; i++){
+        const enemy = miniGame.enemies[i];
         if(enemy.name == args[0]){
           return enemy;
         }
@@ -8063,7 +8068,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      return (GameState.module.area.miniGame.enemies.indexOf(args[0] as ModuleMGEnemy ) >= 0) ? NW_TRUE : NW_FALSE;
+      return (GameState.module?.area?.miniGame?.enemies.indexOf(args[0] as ModuleMGEnemy ) ?? -1) >= 0 ? NW_TRUE : NW_FALSE;
     }
   },
   600:{
@@ -8072,7 +8077,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      return GameState.module.area.miniGame.player == args[0] ? NW_TRUE : NW_FALSE;
+      return GameState.module?.area?.miniGame?.player == args[0] ? NW_TRUE : NW_FALSE;
     }
   },
   601:{
@@ -8081,7 +8086,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      return GameState.module.area.miniGame.enemies.indexOf(args[0] as ModuleMGEnemy) >= 0 ? NW_TRUE : NW_FALSE;
+      return (GameState.module?.area?.miniGame?.enemies.indexOf(args[0] as ModuleMGEnemy) ?? -1) >= 0 ? NW_TRUE : NW_FALSE;
     }
   },
   602:{
@@ -8102,7 +8107,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      return GameState.module.area.miniGame.obstacles.indexOf(args[0] as ModuleMGObstacle) >= 0 ? NW_TRUE : NW_FALSE;
+      return (GameState.module?.area?.miniGame?.obstacles.indexOf(args[0] as ModuleMGObstacle) ?? -1) >= 0 ? NW_TRUE : NW_FALSE;
     }
   },
   604:{
@@ -8155,7 +8160,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.FLOAT,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.miniGame.nearClip;
+      return GameState.module?.area?.miniGame?.nearClip ?? 0;
     }
   },
   609:{
@@ -8164,7 +8169,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.FLOAT,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.miniGame.farClip;
+      return GameState.module?.area?.miniGame?.farClip ?? 0;
     }
   },
   610:{
@@ -8173,8 +8178,10 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.FLOAT, NWScriptDataType.FLOAT],
     action: function(this: NWScriptInstance, args: [number, number]){
-      GameState.module.area.miniGame.nearClip = args[0];
-      GameState.module.area.miniGame.farClip = args[1];
+      const mg = GameState.module?.area?.miniGame;
+      if(!mg) return;
+      mg.nearClip = args[0];
+      mg.farClip = args[1];
     }
   },
   611:{
@@ -8183,7 +8190,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.OBJECT,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.miniGame.player;
+      return GameState.module?.area?.miniGame?.player;
     }
   },
   612:{
@@ -8192,7 +8199,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.miniGame.enemies.length;
+      return GameState.module?.area?.miniGame?.enemies.length ?? 0;
     }
   },
   613:{
@@ -8201,7 +8208,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.OBJECT,
     args: [NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [number]){
-      return GameState.module.area.miniGame.enemies[ args[0] ];
+      return GameState.module?.area?.miniGame?.enemies[ args[0] ];
     }
   },
   614:{
@@ -8210,7 +8217,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [],
     action: function(this: NWScriptInstance, args: []){
-      return GameState.module.area.miniGame.obstacles.length;
+      return GameState.module?.area?.miniGame?.obstacles.length ?? 0;
     }
   },
   615:{
@@ -8219,7 +8226,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.OBJECT,
     args: [NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [number]){
-      return GameState.module.area.miniGame.obstacles[args[0]];
+      return GameState.module?.area?.miniGame?.obstacles[args[0]];
     }
   },
   616:{
@@ -9631,8 +9638,10 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.STRING, NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [string, number]){
-      for(let i = 0, len = GameState.module.area.rooms.length; i < len; i++){
-        let room = GameState.module.area.rooms[i];
+      const rooms = GameState.module?.area?.rooms;
+      if(!rooms) return;
+      for(let i = 0, len = rooms.length; i < len; i++){
+        let room = rooms[i];
         if(room.roomName.toLowerCase() == args[0].toLowerCase()){
           if(room.model){
             room.model.playAnimation( 'scriptloop'+Utility.PadInt(args[1], 2) );

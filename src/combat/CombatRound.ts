@@ -158,18 +158,20 @@ export class CombatRound {
         if(BitWise.InstanceOfObject(owner, ModuleObjectType.ModuleCreature) && BitWise.InstanceOfObject(target, ModuleObjectType.ModuleCreature)){
           if(owner.isDuelingObject(target)){
             this.engaged = true;
-            if(!this.masterID && !targetCombatRound.masterID){
-              this.masterID = targetCombatRound.masterID = owner;
-              this.master = true;
-              targetCombatRound.master = false;
-            }else if(!this.masterID){
-              this.masterID = targetCombatRound.masterID;
-              this.master = false;
+            if(targetCombatRound){
+              if(!this.masterID && !targetCombatRound.masterID){
+                this.masterID = targetCombatRound.masterID = owner;
+                this.master = true;
+                targetCombatRound.master = false;
+              }else if(!this.masterID){
+                this.masterID = targetCombatRound.masterID;
+                this.master = false;
+              }
             }
           }
         }else if(BitWise.InstanceOfObject(owner, ModuleObjectType.ModuleCreature) && BitWise.InstanceOfObject(target, ModuleObjectType.ModuleObject)){
           this.master = true;
-          targetCombatRound.master = !this.master;
+          if(targetCombatRound) targetCombatRound.master = !this.master;
         }
       }else if(
         this.action.actionType == CombatActionType.CAST_SPELL ||

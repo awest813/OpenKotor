@@ -969,7 +969,7 @@ export class GameState implements EngineContext {
 
   public static getCurrentPlayer(): ModuleCreature {
     if(GameState.Mode == EngineMode.MINIGAME){
-      return GameState.module.area.miniGame.player as any;
+      return GameState.module?.area?.miniGame?.player as any;
     }
     let p = GameState.PartyManager.party[0];
     return p ? p : GameState.PartyManager.Player;
@@ -1101,7 +1101,7 @@ export class GameState implements EngineContext {
 
   static RestoreEnginePlayMode(): void {
     if(GameState.module){
-      if(GameState.module.area.miniGame){
+      if(GameState.module?.area?.miniGame){
         console.log('RestoreEnginePlayMode: MINIGAME');
         GameState.SetEngineMode(EngineMode.MINIGAME)
       }else{

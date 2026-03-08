@@ -782,9 +782,10 @@ export class PartyManager {
     //Add the creature to the party array
     PartyManager.party.push(creature);
     //Check to see if the creature needs to be removed from the creatures array
-    let cIdx = GameState.module.area.creatures.indexOf(creature);
+    const areaCreatures = GameState.module?.area?.creatures;
+    let cIdx = areaCreatures ? areaCreatures.indexOf(creature) : -1;
     if(cIdx > -1){
-      GameState.module.area.creatures.splice(cIdx, 1);
+      areaCreatures!.splice(cIdx, 1);
     }
     // Move the creature's 3D container from the world creatures group into
     // the party group so it renders correctly alongside the player.
@@ -1165,6 +1166,9 @@ export class PartyManager {
     if(!creature)
       return new THREE.Vector3();
 
+    if(!leader)
+      return creature.position.clone();
+
     const targetOffset = (idx == 2) ? -1.5 :1.5;
 
     this.#tmpFollowPositionTarget.set(
@@ -1174,8 +1178,8 @@ export class PartyManager {
     );
     this.#tmpFollowPosition.copy(leader.position).sub(this.#tmpFollowPositionTarget);
 
-    return (creature.area.isPointWalkable(this.#tmpFollowPosition)) ?
-      this.#tmpFollowPosition : creature.area.getNearestWalkablePoint(this.#tmpFollowPosition, creature.getHitDistance());
+    return (creature.area?.isPointWalkable(this.#tmpFollowPosition)) ?
+      this.#tmpFollowPosition : creature.area?.getNearestWalkablePoint(this.#tmpFollowPosition, creature.getHitDistance()) ?? creature.position.clone();
   }
 
   /**

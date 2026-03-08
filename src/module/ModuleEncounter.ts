@@ -139,9 +139,10 @@ export class ModuleEncounter extends ModuleObject {
     }
     
     //Check Module Creatures
-    let creatureLen = GameState.module.area.creatures.length;
+    const areaCreatures = GameState.module?.area?.creatures ?? [];
+    let creatureLen = areaCreatures.length;
     for(let i = 0; i < creatureLen; i++){
-      let creature = GameState.module.area.creatures[i];
+      let creature = areaCreatures[i];
       let pos = creature.position.clone();
       if(this.box.containsPoint(pos)){
         if(this.objectsInside.indexOf(creature) == -1){

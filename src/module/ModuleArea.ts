@@ -344,7 +344,7 @@ export class ModuleArea extends ModuleObject {
   }
 
   dispose(){
-    this.areaMap.dispose();
+    this.areaMap?.dispose();
 
     //clear area room objects
     while (this.rooms.length){
@@ -633,7 +633,9 @@ export class ModuleArea extends ModuleObject {
     const audioEngine = AudioEngine.GetAudioEngine();
     //Load the background music
     const ambientmusic2DA = GameState.TwoDAManager.datatables.get('ambientmusic');
+    if(!ambientmusic2DA) return;
     const bgMusic = ambientmusic2DA.rows[index];
+    if(!bgMusic) return;
     this.audio.music.day = index;
     try{
       if(bgMusic.resource != '****'){
@@ -651,7 +653,9 @@ export class ModuleArea extends ModuleObject {
     const audioEngine = AudioEngine.GetAudioEngine();
     //Load the battle music
     const ambientmusic2DA = GameState.TwoDAManager.datatables.get('ambientmusic');
+    if(!ambientmusic2DA) return;
     const bgMusic = ambientmusic2DA.rows[index];
+    if(!bgMusic) return;
     this.audio.music.night = index;
     try{
       if(bgMusic.resource != '****'){
@@ -679,7 +683,9 @@ export class ModuleArea extends ModuleObject {
     const audioEngine = AudioEngine.GetAudioEngine();
     //Load the battle music
     const ambientmusic2DA = GameState.TwoDAManager.datatables.get('ambientmusic');
+    if(!ambientmusic2DA) return;
     const battleMusic = ambientmusic2DA.rows[index];
+    if(!battleMusic) return;
     this.audio.music.battle = index;
     try{
       if(battleMusic.resource != '****'){
@@ -1198,7 +1204,7 @@ export class ModuleArea extends ModuleObject {
     if(cameraStyle2DA){
       return cameraStyle2DA.rows[this.cameraStyle];
     }
-    return cameraStyle2DA.rows[0];
+    return undefined;
   }
 
   async loadPath(){
@@ -1766,7 +1772,7 @@ export class ModuleArea extends ModuleObject {
         }
 
         if(door.openState){
-          door.model.playAnimation('opened1', true);
+          if(door.model) door.model.playAnimation('opened1', true);
         }
         door.getCurrentRoom();
         GameState.group.doors.add( door.container );
@@ -1957,7 +1963,7 @@ export class ModuleArea extends ModuleObject {
         const creature = this.creatures[i];
         creature.load();
         const model = await creature.loadModel();
-        creature.model.userData.moduleObject = creature;
+        if(creature.model) creature.model.userData.moduleObject = creature;
         
         //creature.setFacing(Math.atan2(creature.getXOrientation(), creature.getYOrientation()) + Math.PI/2, true);
         creature.setFacing(-Math.atan2(creature.getXOrientation(), creature.getYOrientation()), true);
