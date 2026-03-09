@@ -1054,6 +1054,14 @@ export class ModuleArea extends ModuleObject {
     this.audio.music.night = this.git.getFieldByLabel('MusicNight', areaPropsField).getValue();
     AudioEngine.GetAudioEngine().setAreaAudioProperties(this.audio);
 
+    // Load dynamic area state from save
+    const stealthXPCurrentField = this.git.getFieldByLabel('StealthXPCurrent', areaPropsField);
+    if(stealthXPCurrentField) this.stealthXP = stealthXPCurrentField.getValue();
+    const restrictModeField = this.git.getFieldByLabel('RestrictMode', areaPropsField);
+    if(restrictModeField) this.restrictMode = restrictModeField.getValue();
+    const unescapableField = this.git.getFieldByLabel('Unescapable', areaPropsField);
+    if(unescapableField) this.unescapable = unescapableField.getValue() ? true : false;
+
     //Cameras
     if(cameras){
       for(let i = 0; i < cameras.childStructs.length; i++){
@@ -2250,9 +2258,9 @@ export class ModuleArea extends ModuleObject {
     struct.addField( new GFFField(GFFDataType.INT, 'MusicNight') ).setValue(this.audio.music.night);
 
     struct.addField( new GFFField(GFFDataType.BYTE, 'RestrictMode') ).setValue(this.restrictMode ? 1 : 0);
-    struct.addField( new GFFField(GFFDataType.DWORD, 'StealthXPCurrent') ).setValue(0);
-    struct.addField( new GFFField(GFFDataType.BYTE, 'StealthXPLoss') ).setValue(0);
-    struct.addField( new GFFField(GFFDataType.DWORD, 'StealthXPMax') ).setValue(0);
+    struct.addField( new GFFField(GFFDataType.DWORD, 'StealthXPCurrent') ).setValue(this.stealthXP);
+    struct.addField( new GFFField(GFFDataType.BYTE, 'StealthXPLoss') ).setValue(this.stealthXPLoss);
+    struct.addField( new GFFField(GFFDataType.DWORD, 'StealthXPMax') ).setValue(this.stealthXPMax);
     struct.addField( new GFFField(GFFDataType.DWORD, 'SunFogColor') ).setValue(0);
     
     struct.addField( new GFFField(GFFDataType.BYTE, 'TransPendCurrID') ).setValue(0);

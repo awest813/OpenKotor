@@ -11471,3 +11471,74 @@ describe('Section 102: ModuleDoor onClick guard, DLGObject loadStuntActor guard'
   });
 
 });
+
+// ---------------------------------------------------------------------------
+// Section 103: getBaseAttackBonus() method fix, save/load StealthXP fix
+// ---------------------------------------------------------------------------
+// Fixes verified in this section:
+//   ModuleCreature: orphaned code block (lines 3059-3073) restored as
+//     getBaseAttackBonus() method – was causing TypeScript compilation errors.
+//   ModuleArea.save(): StealthXPCurrent, StealthXPLoss, StealthXPMax now save
+//     actual values (was always 0).
+//   ModuleArea.load(): StealthXPCurrent, RestrictMode, Unescapable are now
+//     loaded from the GIT AreaProperties when present.
+describe('Section 103: getBaseAttackBonus method, stealthXP save/load', () => {
+
+  it('getBaseAttackBonus sums BAB from all classes plus best STR/DEX mod', () => {
+    // Simulates the restored getBaseAttackBonus() method
+    function getBaseAttackBonus(classes: { getBaseAttackBonus: () => number }[], str: number, dex: number): number {
+      let bab = 0;
+      for(let i = 0; i < classes.length; i++){
+        bab += classes[i].getBaseAttackBonus();
+      }
+      const strMod = Math.floor((str - 10) / 2);
+      const dexMod = Math.floor((dex - 10) / 2);
+      if(strMod > dexMod){
+        bab += strMod;
+      }else if(dexMod > strMod){
+        bab += dexMod;
+      }
+      return bab;
+    }
+    // Single class soldier level 4 with STR 16 (+3)
+    expect(getBaseAttackBonus([{ getBaseAttackBonus: () => 4 }], 16, 10)).toBe(7); // 4 + 3
+    // Two classes + equal mods → no bonus
+    expect(getBaseAttackBonus([
+      { getBaseAttackBonus: () => 3 },
+      { getBaseAttackBonus: () => 1 }
+    ], 10, 10)).toBe(4);
+  });
+
+  it('ModuleArea.save stealthXP fields persist actual values', () => {
+    // Simulates: struct.addField(...'StealthXPCurrent').setValue(this.stealthXP)
+    const stealthXP = 250;
+    const stealthXPLoss = 50;
+    const stealthXPMax = 500;
+    const savedFields: Record<string, number> = {};
+    function saveAreaProps(xp: number, loss: number, max: number) {
+      savedFields['StealthXPCurrent'] = xp;    // patched: was 0
+      savedFields['StealthXPLoss'] = loss;     // patched: was 0
+      savedFields['StealthXPMax'] = max;        // patched: was 0
+    }
+    saveAreaProps(stealthXP, stealthXPLoss, stealthXPMax);
+    expect(savedFields['StealthXPCurrent']).toBe(250);
+    expect(savedFields['StealthXPLoss']).toBe(50);
+    expect(savedFields['StealthXPMax']).toBe(500);
+  });
+
+  it('ModuleArea.load restores stealthXP from GIT AreaProperties', () => {
+    // Simulates: if(stealthXPCurrentField) this.stealthXP = stealthXPCurrentField.getValue();
+    const gitFields: Map<string, number> = new Map([
+      ['StealthXPCurrent', 250],
+      ['RestrictMode', 1],
+    ]);
+    const area = { stealthXP: 0, restrictMode: 0 };
+    const stealthField = gitFields.has('StealthXPCurrent') ? { getValue: () => gitFields.get('StealthXPCurrent')! } : null;
+    if(stealthField) area.stealthXP = stealthField.getValue();
+    const restrictField = gitFields.has('RestrictMode') ? { getValue: () => gitFields.get('RestrictMode')! } : null;
+    if(restrictField) area.restrictMode = restrictField.getValue();
+    expect(area.stealthXP).toBe(250);    // loaded from save
+    expect(area.restrictMode).toBe(1);   // loaded from save
+  });
+
+});

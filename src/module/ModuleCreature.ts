@@ -3055,7 +3055,7 @@ export class ModuleCreature extends ModuleObject {
     this.currentHitPoints = hp;
   }
 
-
+  getBaseAttackBonus(){
     let bab = 0;
     for(let i = 0, len = this.classes.length; i < len; i++){
       bab += this.classes[i].getBaseAttackBonus();
