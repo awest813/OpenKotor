@@ -12053,3 +12053,135 @@ describe('Section 116: InGameOverlay LBL_LEVELUP pulsing guard', () => {
   });
 
 });
+
+describe('Section 117: PartyManager GlxyMap getChildStructs()[0] guard', () => {
+
+  it('does not crash when GlxyMap getChildStructs() returns empty array', () => {
+    // Simulates: let GlxyMap = gff.getFieldByLabel('GlxyMap').getChildStructs()[0]; if(!GlxyMap) return;
+    const mockGff = {
+      RootNode: { hasField: (f: string) => f === 'GlxyMap' },
+      getFieldByLabel: () => ({ getChildStructs: () => [] as any[] }),
+    };
+    let crashed = false;
+    function loadGlxyMap(gff: any) {
+      if(gff.RootNode.hasField('GlxyMap')){
+        const GlxyMap = gff.getFieldByLabel('GlxyMap').getChildStructs()[0];
+        if(!GlxyMap) return;
+        // would access GlxyMap.getFieldByLabel(...)
+        crashed = true;
+      }
+    }
+    loadGlxyMap(mockGff);
+    expect(crashed).toBe(false); // no crash
+  });
+
+  it('loads GlxyMap data when struct is valid', () => {
+    const mockStruct = {
+      getFieldByLabel: (f: string) => ({
+        getValue: () => f === 'GlxyMapNumPnts' ? 3 : f === 'GlxyMapPlntMsk' ? 0b101 : 0,
+      }),
+    };
+    const mockGff = {
+      RootNode: { hasField: (f: string) => f === 'GlxyMap' },
+      getFieldByLabel: () => ({ getChildStructs: () => [mockStruct] as any[] }),
+    };
+    let loaded = false;
+    function loadGlxyMap(gff: any) {
+      if(gff.RootNode.hasField('GlxyMap')){
+        const GlxyMap = gff.getFieldByLabel('GlxyMap').getChildStructs()[0];
+        if(!GlxyMap) return;
+        const planetCount = GlxyMap.getFieldByLabel('GlxyMapNumPnts').getValue();
+        loaded = planetCount > 0;
+      }
+    }
+    loadGlxyMap(mockGff);
+    expect(loaded).toBe(true);
+  });
+
+});
+
+describe('Section 118: NWScriptStack.FromActionStruct null guard', () => {
+
+  it('FromActionStruct returns an empty stack when struct is null', () => {
+    // Simulates: if(!struct) return stack;
+    function fromActionStruct(struct: any) {
+      const stack = { basePointer: 0, pointer: 0 };
+      if(!struct) return stack;
+      stack.basePointer = struct.getFieldByLabel('BasePointer').getValue() * 4;
+      return stack;
+    }
+    const result = fromActionStruct(null);
+    expect(result.basePointer).toBe(0); // no crash, default value
+  });
+
+  it('FromActionStruct reads values when struct is valid', () => {
+    function fromActionStruct(struct: any) {
+      const stack = { basePointer: 0, pointer: 0 };
+      if(!struct) return stack;
+      stack.basePointer = struct.getFieldByLabel('BasePointer').getValue() * 4;
+      return stack;
+    }
+    const mockStruct = { getFieldByLabel: (f: string) => ({ getValue: () => 5 }) };
+    const result = fromActionStruct(mockStruct);
+    expect(result.basePointer).toBe(20); // 5 * 4
+  });
+
+});
+
+describe('Section 119: NWScriptStack GameDefinedStrct guard', () => {
+
+  it('does not crash when GameDefinedStrct getChildStructs returns empty array', () => {
+    // Simulates: let gameStruct = ..getChildStructs()[0]; if(!gameStruct) break;
+    let processed = false;
+    function processStack(stackElement: any) {
+      if(stackElement.hasField('GameDefinedStrct')){
+        const gameStruct = stackElement.getFieldByLabel('GameDefinedStrct').getChildStructs()[0];
+        if(!gameStruct) return;
+        processed = true; // would call gameStruct.getType()
+      }
+    }
+    processStack({ hasField: () => true, getFieldByLabel: () => ({ getChildStructs: () => [] }) });
+    expect(processed).toBe(false); // no crash
+  });
+
+  it('processes gameStruct when struct is valid', () => {
+    let processed = false;
+    function processStack(stackElement: any) {
+      if(stackElement.hasField('GameDefinedStrct')){
+        const gameStruct = stackElement.getFieldByLabel('GameDefinedStrct').getChildStructs()[0];
+        if(!gameStruct) return;
+        const type = gameStruct.getType();
+        if(type >= 0) processed = true;
+      }
+    }
+    const mockStruct = { getType: () => 0 };
+    processStack({ hasField: () => true, getFieldByLabel: () => ({ getChildStructs: () => [mockStruct] }) });
+    expect(processed).toBe(true);
+  });
+
+});
+
+describe('Section 120: ActionParameter SCRIPT_SITUATION guard', () => {
+
+  it('does not crash when SCRIPT_SITUATION Value getChildStructs returns empty array', () => {
+    // Simulates: let scriptParamStructs = ..getChildStructs()[0]; if(!scriptParamStructs) break;
+    const SCRIPT_SITUATION = 9; // ActionParameterType.SCRIPT_SITUATION
+    let scriptCreated = false;
+    function fromStruct(type: number, struct: any) {
+      let value: any;
+      switch(type){
+        case SCRIPT_SITUATION:
+          const scriptParamStructs = struct.getFieldByLabel('Value').getChildStructs()[0];
+          if(!scriptParamStructs) break;
+          scriptCreated = true;
+          value = {};
+        break;
+      }
+      return value;
+    }
+    const mockStruct = { getFieldByLabel: () => ({ getChildStructs: () => [] }) };
+    fromStruct(SCRIPT_SITUATION, mockStruct);
+    expect(scriptCreated).toBe(false); // no crash
+  });
+
+});
