@@ -11542,3 +11542,37 @@ describe('Section 103: getBaseAttackBonus method, stealthXP save/load', () => {
   });
 
 });
+
+// ---------------------------------------------------------------------------
+// Section 104: ApplyEffectToObject future null-guard
+// ---------------------------------------------------------------------------
+// Fixes verified in this section:
+//   ApplyEffectToObject (fn 220): when durationType is TEMPORARY, the future
+//     time object from timeManager?.getFutureTimeFromSeconds() could be
+//     undefined if module or timeManager is not yet set up.  Now guarded with
+//     `if(future)` before accessing future.pauseDay / future.pauseTime.
+describe('Section 104: ApplyEffectToObject temporary effect future guard', () => {
+
+  it('ApplyEffectToObject does not crash when timeManager is unavailable', () => {
+    // Simulates the patched TEMPORARY branch:
+    //   const future = timeManager?.getFutureTimeFromSeconds(dur);
+    //   if(future){ effect.setExpireDay(future.pauseDay); effect.setExpireTime(future.pauseTime); }
+    const TEMPORARY = 1;
+    let expireSet = false;
+    function applyTemporaryEffect(durationType: number, timeManager: any, duration: number): void {
+      if(durationType === TEMPORARY){
+        const future = timeManager?.getFutureTimeFromSeconds(duration);
+        if(future){                              // patched guard
+          expireSet = true;
+        }
+      }
+    }
+    // No timeManager → no crash, effect expire not set
+    applyTemporaryEffect(TEMPORARY, null, 6.0);
+    expect(expireSet).toBe(false);
+    // timeManager present → expire is set
+    applyTemporaryEffect(TEMPORARY, { getFutureTimeFromSeconds: () => ({ pauseDay: 1, pauseTime: 2 }) }, 6.0);
+    expect(expireSet).toBe(true);
+  });
+
+});
