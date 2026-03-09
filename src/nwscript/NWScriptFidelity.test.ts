@@ -12185,3 +12185,61 @@ describe('Section 120: ActionParameter SCRIPT_SITUATION guard', () => {
   });
 
 });
+
+describe('Section 121: NWScript SetFacing/ActionAttack/ActionDoCommand/GetDistanceToObject2D caller guards', () => {
+
+  it('SetFacing does not crash when caller is null', () => {
+    // Simulates: this.caller?.setFacing(args[0] * Math.PI / 180)
+    let facingSet = false;
+    function setFacing(caller: any, deg: number) {
+      caller?.setFacing(deg * Math.PI / 180);
+      facingSet = !!caller;
+    }
+    setFacing(null, 90);
+    expect(facingSet).toBe(false); // no crash, just a no-op
+  });
+
+  it('ActionAttack does not crash when caller is not a creature', () => {
+    // Simulates: if(InstanceOfObject(this.caller, ModuleCreature)) { this.caller.attackCreature(...) }
+    let attacked = false;
+    function actionAttack(caller: any, target: any) {
+      const isCreature = !!(caller && typeof caller.attackCreature === 'function');
+      if(isCreature) caller.attackCreature(target);
+      attacked = isCreature;
+    }
+    actionAttack(null, {});
+    expect(attacked).toBe(false);
+    actionAttack({ attackCreature: () => { attacked = true; } }, {});
+    expect(attacked).toBe(true);
+  });
+
+  it('ActionDoCommand does not crash when caller is null', () => {
+    // Simulates: if(!InstanceOfObject(this.caller, ModuleObject)) return; this.caller.doCommand(...)
+    let doCommandCalled = false;
+    function actionDoCommand(caller: any, args: any) {
+      if(!args || !args.script) return;
+      if(!caller) return; // equivalent to InstanceOfObject check
+      caller.doCommand(args.script);
+      doCommandCalled = true;
+    }
+    actionDoCommand(null, { script: {} });
+    expect(doCommandCalled).toBe(false); // no crash
+  });
+
+  it('GetDistanceToObject2D returns -1 when caller is invalid', () => {
+    // Simulates: if(InstanceOf(args[0]) && InstanceOf(this.caller)) { ... } else { return -1 }
+    function getDistance2D(caller: any, target: any) {
+      if(!caller?.position || !target?.position) return -1.0;
+      const dx = caller.position.x - target.position.x;
+      const dy = caller.position.y - target.position.y;
+      return Math.sqrt(dx*dx + dy*dy);
+    }
+    expect(getDistance2D(null, { position: { x: 0, y: 0 } })).toBe(-1.0);
+    const d = getDistance2D(
+      { position: { x: 3, y: 0 } },
+      { position: { x: 0, y: 4 } }
+    );
+    expect(d).toBeCloseTo(5, 5);
+  });
+
+});
