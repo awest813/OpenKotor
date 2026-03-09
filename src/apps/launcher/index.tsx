@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import './app.scss';
 import { AppProvider, useApp } from "./context/AppContext";
@@ -31,11 +31,13 @@ const App = function() {
 
   const [selectedTab, setSelectedTab] = useState('apps');
 
-  let tabRefs: React.RefObject<any>[] = Array(Object.values(profileCategoriesValue).reduce((acc, cat: any) => {
-    return acc + cat.profiles.length;
-  }, 0)).fill(0).map(i=> React.createRef());
+  const tabRefs = useMemo(() => {
+    return Object.values(profileCategoriesValue).flatMap((category: any) => {
+      return category.profiles.map(() => React.createRef<any>());
+    });
+  }, [profileCategoriesValue]);
 
-  let resizeEndTimeout: ReturnType<typeof setTimeout>;
+  const resizeEndTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onResizeEnd = () => {
     console.log('end');
     ConfigClient.set(['Launcher', 'width'], window.outerWidth);
@@ -44,8 +46,10 @@ const App = function() {
   };
 
   const onResize = () => {
-    clearTimeout(resizeEndTimeout);
-    resizeEndTimeout = setTimeout(onResizeEnd, 100);
+    if(resizeEndTimeout.current){
+      clearTimeout(resizeEndTimeout.current);
+    }
+    resizeEndTimeout.current = setTimeout(onResizeEnd, 100);
   };
 
   const onFocus = () => {
@@ -98,10 +102,6 @@ const App = function() {
         )
       );
       document.body.style.display = '';
-      tabRefs = Array(Object.values(Launcher.AppCategories).reduce((acc, cat: any) => {
-        return acc + cat.profiles.length;
-      }, 0)).fill(0).map(i=> React.createRef());
-      console.log(tabRefs);
       setAppReady(true);
     })
 
@@ -113,7 +113,9 @@ const App = function() {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('focus', onFocus);
       document.removeEventListener('fullscreenchange', onFullscreenChange);
-      clearTimeout(resizeEndTimeout);
+      if(resizeEndTimeout.current){
+        clearTimeout(resizeEndTimeout.current);
+      }
     }
   }, []);
 
@@ -121,19 +123,19 @@ const App = function() {
     // console.log('cat', appContext.profileCategories);
   }, [appContext.profileCategories])
 
-  const onBtnMinimize = (e: React.MouseEvent<HTMLDivElement>) => {
+  const onBtnMinimize = (e: React.MouseEvent<HTMLButtonElement>) => {
     // e.preventDefault();
     if(ApplicationProfile.ENV == ApplicationEnvironment.ELECTRON){
       window.electron.minimize();
     }
   }
-  const onBtnMaximize = (e: React.MouseEvent<HTMLDivElement>) => {
+  const onBtnMaximize = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if(ApplicationProfile.ENV == ApplicationEnvironment.ELECTRON){
       window.electron.maximize();
     }
   }
-  const onBtnClose = (e: React.MouseEvent<HTMLDivElement>) => {
+  const onBtnClose = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if(ApplicationProfile.ENV == ApplicationEnvironment.ELECTRON){
       window.close();
@@ -147,7 +149,7 @@ const App = function() {
     setSelectedTab(tabId);
   }
 
-  const onDiscordToggle = (e: React.MouseEvent<HTMLLIElement>) => {
+  const onDiscordToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setDiscordWidgetOpen(!discordWidgetOpen);
   }
@@ -159,19 +161,21 @@ const App = function() {
           <div className="launcher-menu-background"></div>
           <div className="menu-accent"><div className="inner"></div></div>
           <ul className="top-nav">
-            <li className="tab-btn nav-logo"><img src="images/kotor-js-logo.png" /></li>
+            <li className="tab-btn nav-logo"><img src="images/kotor-js-logo.png" alt="KotOR.js logo" /></li>
             <li className="tab-btn"><a href="#apps" onClick={onTabClicked}>Apps</a></li>
             <li className="tab-btn"><a href="#community" onClick={onTabClicked}>Community</a></li>
             <li className="tab-btn"><a href="#buy" onClick={onTabClicked}>Need KotOR?</a></li>
-            <li className="tab-btn discord-toggle" onClick={onDiscordToggle} title={discordWidgetOpen ? "Hide Discord" : "Show Discord"}>
-              <i className={`fab fa-discord ${discordWidgetOpen ? 'active' : ''}`}></i>
+            <li className="tab-btn discord-toggle" title={discordWidgetOpen ? "Hide Discord" : "Show Discord"}>
+              <button type="button" onClick={onDiscordToggle} aria-label={discordWidgetOpen ? "Hide Discord widget" : "Show Discord widget"}>
+                <i className={`fab fa-discord ${discordWidgetOpen ? 'active' : ''}`}></i>
+              </button>
             </li>
           </ul>
           {showMenuTopRight && (
             <div id="launcher-menu-top-right" className="launcher-menu-top-right">
-              <div className="launcher-min" title="Minimize Window" onClick={onBtnMinimize}><i className="fas fa-window-minimize"></i></div>
-              <div className="launcher-max" title="Maximize Window" onClick={onBtnMaximize}><i className="far fa-clone"></i></div>
-              <div className="launcher-close" title="Close Window" onClick={onBtnClose}><i className="fas fa-times"></i></div>
+              <button type="button" className="launcher-min" title="Minimize Window" onClick={onBtnMinimize} aria-label="Minimize window"><i className="fas fa-window-minimize"></i></button>
+              <button type="button" className="launcher-max" title="Maximize Window" onClick={onBtnMaximize} aria-label="Maximize window"><i className="far fa-clone"></i></button>
+              <button type="button" className="launcher-close" title="Close Window" onClick={onBtnClose} aria-label="Close window"><i className="fas fa-times"></i></button>
             </div>
           )}
         </div>

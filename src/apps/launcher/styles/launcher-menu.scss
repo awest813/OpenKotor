@@ -45,10 +45,18 @@ body.lightbox_open .launcher-menu {
   color: rgba(183, 183, 183, 0.5);
 }
 
-.launcher-menu-top-right > div {
+.launcher-menu-top-right > button {
   float: left;
   margin-right: 5px;
   cursor: pointer;
+  background: transparent;
+  border: 0;
+  color: inherit;
+}
+
+.launcher-menu-top-right > button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 1px;
 }
 
 /* Accent */
