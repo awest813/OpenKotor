@@ -446,7 +446,8 @@ export class ModuleArea extends ModuleObject {
 
     //unset party controlled
     for(let i = 0; i < partyCount; i++){
-      if(GameState.PartyManager.party[i]) GameState.PartyManager.party[i].controlled = false;
+      const member = GameState.PartyManager.party[i];
+      if(member) member.controlled = false;
     }
 
     if(GameState.Mode == EngineMode.MINIGAME){

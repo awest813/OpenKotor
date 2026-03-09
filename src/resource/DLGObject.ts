@@ -358,15 +358,15 @@ export class DLGObject {
             actor.animations = actorSuperModel.odysseyAnimations;
 
             if(this.isAnimatedCutscene)
-              GameState.PartyManager.party[0]?.setFacing(0, true);
+              playerActor.setFacing(0, true);
 
             if(this.unequipItems)
-              GameState.PartyManager.party[0]?.UnequipItems();
+              playerActor.UnequipItems();
 
             if(this.unequipHeadItem)
-              GameState.PartyManager.party[0]?.UnequipHeadItem();
+              playerActor.UnequipHeadItem();
 
-            actor.moduleObject = GameState.PartyManager.party[0];
+            actor.moduleObject = playerActor;
             if(actor.moduleObject){
               actor.moduleObject.setCutsceneMode(true);
             }
