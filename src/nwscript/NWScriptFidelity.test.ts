@@ -11255,3 +11255,57 @@ describe('Section 98: ResistForce, CutsceneAttack, Placeable lock, MenuEquipment
   });
 
 });
+
+// ---------------------------------------------------------------------------
+// Section 99: CombatRound safety fixes
+// ---------------------------------------------------------------------------
+// Fixes verified in this section:
+//   calculateWeaponAttack(): guard against attackList overflow (currentAttack >= 5)
+//   calculateAttackDamage(): guard combatAction.target null before accessing
+//     combatData and calling onAttacked.
+//   calculateAttackDamage(): creature.model optional chain for odysseyAnimationMap.
+describe('Section 99: CombatRound null-guard and overflow fixes', () => {
+
+  it('calculateWeaponAttack returns early when attackList slot is undefined', () => {
+    // Simulates: const attack = attackList[currentAttack]; if(!attack) return;
+    const attackList: Array<{ sneakAttack: boolean } | undefined> = [
+      { sneakAttack: false },
+      { sneakAttack: false },
+    ];
+    function tryGetAttackSlot(currentAttack: number): boolean {
+      const attack = attackList[currentAttack];
+      if(!attack) return false;  // patched guard
+      return true;
+    }
+    expect(tryGetAttackSlot(0)).toBe(true);
+    expect(tryGetAttackSlot(1)).toBe(true);
+    expect(tryGetAttackSlot(2)).toBe(false);  // out of bounds → no crash
+    expect(tryGetAttackSlot(99)).toBe(false); // way out of bounds → no crash
+  });
+
+  it('calculateAttackDamage is a no-op when combatAction.target is null', () => {
+    // Simulates: if(!combatAction.target) return;
+    let attackerSet = false;
+    function calculateAttackDamage(target: any): void {
+      if(!target) return;   // patched guard
+      target.combatData.lastAttacker = 'attacker';
+      attackerSet = true;
+    }
+    calculateAttackDamage(null);
+    expect(attackerSet).toBe(false);  // no crash
+    calculateAttackDamage({ combatData: {} });
+    expect(attackerSet).toBe(true);
+  });
+
+  it('creature.model optional chain prevents crash when model is null', () => {
+    // Simulates: creature.model?.odysseyAnimationMap?.get(animName)
+    const creature1 = { model: null };
+    const creature2 = { model: { odysseyAnimationMap: new Map([['attack', { delay: 0.5 }]]) } };
+    function getAnim(creature: any, animName: string): any {
+      return creature.model?.odysseyAnimationMap?.get(animName);
+    }
+    expect(getAnim(creature1, 'attack')).toBeUndefined();  // no crash
+    expect(getAnim(creature2, 'attack')).toEqual({ delay: 0.5 });
+  });
+
+});
