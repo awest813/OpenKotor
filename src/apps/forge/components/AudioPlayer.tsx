@@ -108,7 +108,7 @@ export const AudioPlayer = function(props: any){
         <span className="btn-stop" title="Stop" style={{cursor: 'pointer', flex:1}} onClick={onBtnStop}>
           <i className="fa-solid fa-stop"></i>
         </span>
-        <input className="track" type="range" step="0.01" min="0" value={currentTime} max={duration} disabled={!!isReady} onChange={onTrackBarChange} />
+        <input className="track" type="range" step="0.01" min="0" value={currentTime} max={duration} disabled={!isReady} onChange={onTrackBarChange} />
         <span className="time">{currentTimeString} / {durationString}</span>
         <span className="btn-save" title="Export Audio" style={{cursor: 'pointer', flex:1, marginLeft: '3px'}} onClick={onBtnSave}>
           <i className="fa-solid fa-download"></i>

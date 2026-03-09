@@ -24,13 +24,11 @@ export const ModalChangeGame = function(props: any){
     let all_profile_keys = Object.keys(all_profiles);
     
     for(let i = 0, len = all_profile_keys.length; i < len; i++){
-      console.log(all_profile_keys[i])
       let profile = all_profiles[all_profile_keys[i]];
       if(profile.isForgeCompatible){
         compatible_profiles.push(profile);
       }
     }
-    console.log('profiles', compatible_profiles);
     setProfiles(compatible_profiles);
     ModalChangeGameState.AddEventListener('onShow', handleShow);
     ModalChangeGameState.AddEventListener('onHide', handleShow);
@@ -89,11 +87,7 @@ export class ModalChangeGameState {
       let index = ev.indexOf(cb);
       if(index == -1){
         ev.push(cb);
-      }else{
-        console.warn('Event Listener: Already added', type);
       }
-    }else{
-      console.warn('Event Listener: Unsupported', type);
     }
   }
 
@@ -103,25 +97,18 @@ export class ModalChangeGameState {
       let index = ev.indexOf(cb);
       if(index >= 0){
         ev.splice(index, 1);
-      }else{
-        console.warn('Event Listener: Already removed', type);
       }
-    }else{
-      console.warn('Event Listener: Unsupported', type);
     }
   }
 
   static ProcessEventListener(type: ModalChangeGameEventListenerTypes, args: any[] = []){
-    if(Array.isArray(ModalChangeGameState.eventListeners[type])){
-      let ev = ModalChangeGameState.eventListeners[type];
-      for(let i = 0; i < ev.length; i++){
-        const callback = ev[i];
-        if(typeof callback === 'function'){
-          callback(...args);
-        }
+    if(!Array.isArray(ModalChangeGameState.eventListeners[type])) return;
+    let ev = ModalChangeGameState.eventListeners[type];
+    for(let i = 0; i < ev.length; i++){
+      const callback = ev[i];
+      if(typeof callback === 'function'){
+        callback(...args);
       }
-    }else{
-      console.warn('Event Listener: Unsupported', type);
     }
   }
 

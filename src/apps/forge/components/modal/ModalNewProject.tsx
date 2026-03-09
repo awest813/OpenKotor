@@ -41,6 +41,7 @@ export const ModalNewProject = (props: BaseModalProps) => {
   const [moduleName, setModuleName] = useState<string>('');
   const [areaName, setAreaName] = useState<string>('');
   const [projectDirectory, setProjectDirectory] = useState<ProjectDirectory>();
+  const [isCreating, setIsCreating] = useState(false);
 
   const onHide = () => {
     setShow(false);
@@ -70,75 +71,58 @@ export const ModalNewProject = (props: BaseModalProps) => {
   };
 
   const onGameModulesLoaded = (modules: GameModule[]) => {
-    console.log('onGameModulesLoaded', modules);
     setGameModules([...modules]);
   };
 
   const handleCreateProject = async () => {
-    console.log('handleCreateProject', projectName, selectedGameModule);
-    if(!projectDirectory){
-      return;
-    }
-    const project = new Project();
-    project.settings.game = KotOR.GameState.GameKey;
-    project.settings.name = projectName;
-    project.settings.type = projectType;
-    project.settings.open_files = [];
-    if(KotOR.ApplicationProfile.ENV == KotOR.ApplicationEnvironment.ELECTRON){
-      if(!projectDirectory.path){
-        console.error('Project directory path is required');
+    if(!projectDirectory || isCreating){ return; }
+    setIsCreating(true);
+    try{
+      const project = new Project();
+      project.settings.game = KotOR.GameState.GameKey;
+      project.settings.name = projectName;
+      project.settings.type = projectType;
+      project.settings.open_files = [];
+      if(KotOR.ApplicationProfile.ENV == KotOR.ApplicationEnvironment.ELECTRON){
+        if(!projectDirectory.path){ return; }
+        ProjectFileSystem.rootDirectoryPath = projectDirectory.path;
+        ProjectFileSystem.rootDirectoryHandle = undefined as unknown as FileSystemDirectoryHandle;
+        ForgeState.project = project;
+        project.saveSettings();
+        if(projectType === ProjectType.MODULE){
+          const gameModule = gameModules[selectedGameModule];
+          if(gameModule){
+            const lyt = await KotOR.ResourceLoader.loadResource(KotOR.ResourceTypes.lyt, gameModule.entryArea);
+            if(lyt){ await ProjectFileSystem.writeFile(areaName + '.lyt', lyt); }
+            const vis = await KotOR.ResourceLoader.loadResource(KotOR.ResourceTypes.vis, gameModule.entryArea);
+            if(vis){ await ProjectFileSystem.writeFile(areaName + '.vis', vis); }
+          }
+          const { ifo, are, git } = await project.buildModuleAndArea(moduleName, areaName, gameModule?.rooms || []);
+        }
+        modal.close();
         return;
       }
-      ProjectFileSystem.rootDirectoryPath = projectDirectory.path;
-      ProjectFileSystem.rootDirectoryHandle = undefined as unknown as FileSystemDirectoryHandle;
-      ForgeState.project = project;
-      project.saveSettings();
-      if(projectType === ProjectType.MODULE){
-        const gameModule = gameModules[selectedGameModule];
-        if(gameModule){
-          console.log('selectedGameModule', gameModule.entryArea);
-          const lyt = await KotOR.ResourceLoader.loadResource(KotOR.ResourceTypes.lyt, gameModule.entryArea);
-          if(lyt){  
-            await ProjectFileSystem.writeFile(areaName + '.lyt', lyt);
+      if(KotOR.ApplicationProfile.ENV == KotOR.ApplicationEnvironment.BROWSER){
+        if(!projectDirectory.handle){ return; }
+        ProjectFileSystem.rootDirectoryPath = undefined as unknown as string;
+        ProjectFileSystem.rootDirectoryHandle = projectDirectory.handle;
+        ForgeState.project = project;
+        project.saveSettings();
+        if(projectType === ProjectType.MODULE){
+          const gameModule = gameModules[selectedGameModule];
+          if(gameModule){
+            const lyt = await KotOR.ResourceLoader.loadResource(KotOR.ResourceTypes.lyt, gameModule.entryArea);
+            if(lyt){ await ProjectFileSystem.writeFile(areaName + '.lyt', lyt); }
+            const vis = await KotOR.ResourceLoader.loadResource(KotOR.ResourceTypes.vis, gameModule.entryArea);
+            if(vis){ await ProjectFileSystem.writeFile(areaName + '.vis', vis); }
           }
-          const vis = await KotOR.ResourceLoader.loadResource(KotOR.ResourceTypes.vis, gameModule.entryArea);
-          if(vis){
-            await ProjectFileSystem.writeFile(areaName + '.vis', vis);
-          }
+          const { ifo, are, git } = await project.buildModuleAndArea(moduleName, areaName, gameModule?.rooms || []);
         }
-        const { ifo, are, git } = await project.buildModuleAndArea(moduleName, areaName, gameModule?.rooms || []);
-      }
-      modal.close();
-      return;
-    }
-    
-    if(KotOR.ApplicationProfile.ENV == KotOR.ApplicationEnvironment.BROWSER){
-      if(!projectDirectory.handle){
-        console.error('Project directory handle is required');
+        modal.close();
         return;
       }
-      ProjectFileSystem.rootDirectoryPath = undefined as unknown as string;
-      ProjectFileSystem.rootDirectoryHandle = projectDirectory.handle;
-      console.log('ProjectFileSystem.rootDirectoryHandle', ProjectFileSystem.rootDirectoryHandle);
-      ForgeState.project = project;
-      project.saveSettings();
-      if(projectType === ProjectType.MODULE){
-        const gameModule = gameModules[selectedGameModule];
-        if(gameModule){
-          console.log('selectedGameModule', gameModule.entryArea);
-          const lyt = await KotOR.ResourceLoader.loadResource(KotOR.ResourceTypes.lyt, gameModule.entryArea);
-          if(lyt){  
-            await ProjectFileSystem.writeFile(areaName + '.lyt', lyt);
-          }
-          const vis = await KotOR.ResourceLoader.loadResource(KotOR.ResourceTypes.vis, gameModule.entryArea);
-          if(vis){
-            await ProjectFileSystem.writeFile(areaName + '.vis', vis);
-          }
-        }
-        const { ifo, are, git } = await project.buildModuleAndArea(moduleName, areaName, gameModule?.rooms || []);
-      }
-      modal.close();
-      return;
+    }finally{
+      setIsCreating(false);
     }
   };
 
@@ -176,7 +160,6 @@ export const ModalNewProject = (props: BaseModalProps) => {
 
   const onModuleTemplateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedGameModule(parseInt(e.target.value));
-    console.log('selectedGameModule', e.target.value);
   };
 
   return (
@@ -240,8 +223,10 @@ export const ModalNewProject = (props: BaseModalProps) => {
       </Modal.Body>
 
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>Close</Button>
-        <Button variant="primary" onClick={handleCreateProject}>Create Project</Button>
+        <Button variant="secondary" onClick={handleClose} disabled={isCreating}>Close</Button>
+        <Button variant="primary" onClick={handleCreateProject} disabled={isCreating || !projectDirectory}>
+          {isCreating ? 'Creating…' : 'Create Project'}
+        </Button>
       </Modal.Footer>
     </Modal>
   );

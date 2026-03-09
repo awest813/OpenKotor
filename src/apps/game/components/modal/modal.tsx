@@ -7,23 +7,25 @@ export interface KotORModalProps {
   show: boolean;
   title: string;
   enableCancel?: boolean;
-  enableOk?: boolean; 
+  enableOk?: boolean;
   cancelText?: string;
   okText?: string;
+  okDisabled?: boolean;
   onCancel?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   onOk?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   gameKey?: string;
 }
 
-export const KotORModal = ({ 
-  children, 
-  show, 
-  title, 
-  enableCancel = true, 
-  enableOk = true, 
+export const KotORModal = ({
+  children,
+  show,
+  title,
+  enableCancel = true,
+  enableOk = true,
   cancelText = "CANCEL",
   okText = "OK",
-  onCancel, 
+  okDisabled = false,
+  onCancel,
   onOk
 }: KotORModalProps) => {
   const appContext = useApp();
@@ -57,7 +59,7 @@ export const KotORModal = ({
         <div className="modal-content">{children}</div>
         <div className="modal-actions">
           {enableCancel && <button className="modal-button" onClick={handleCancel}>{cancelText}</button>}
-          {enableOk && <button className="modal-button" onClick={handleOk}>{okText}</button>}
+          {enableOk && <button className="modal-button" onClick={handleOk} disabled={okDisabled}>{okText}</button>}
         </div>
       </div>
     </div>

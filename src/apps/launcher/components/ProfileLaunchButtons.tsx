@@ -18,6 +18,7 @@ export const ProfileLaunchButtons = function(props: ProfileLaunchButtonsProps) {
   const [selectValue, setSelectValue] = useState<any>("js");
   const [forgeSelectValue, setForgeSelectValue] = useState<any>();
   const [locateError, setLocateError] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
   const isLocateRequired = (ApplicationProfile.ENV == ApplicationEnvironment.ELECTRON && !!profile.locate_required) && !profile.directory
 
   const launchLabel = profile.category == 'game' ? 'PLAY' : 'OPEN';
@@ -45,7 +46,9 @@ export const ProfileLaunchButtons = function(props: ProfileLaunchButtonsProps) {
   };
 
   const btnLocate = () => {
+    if(isLocating) return;
     setLocateError(null);
+    setIsLocating(true);
     if(ApplicationProfile.ENV == ApplicationEnvironment.ELECTRON){
       window.electron.locate_game_directory(profile).then( (directory: string) => {
         if(directory){
@@ -56,7 +59,7 @@ export const ProfileLaunchButtons = function(props: ProfileLaunchButtonsProps) {
       }).catch( (e: any) => {
         console.error(e);
         setLocateError('Could not locate game directory. Please try again.');
-      });
+      }).finally(() => setIsLocating(false));
     }else{
       GameFileSystem.showRequestDirectoryDialog().then( (handle) => {
         if(handle){
@@ -72,7 +75,7 @@ export const ProfileLaunchButtons = function(props: ProfileLaunchButtonsProps) {
           console.error(e);
           setLocateError('Failed to access the directory. Please try again.');
         }
-      });
+      }).finally(() => setIsLocating(false));
     }
   };
 
@@ -104,7 +107,7 @@ export const ProfileLaunchButtons = function(props: ProfileLaunchButtonsProps) {
   if(isLocateRequired){
     return (
       <div className="launch-btns">
-        <a href="#" className="btn-launch locate" key="launch-btn-locate" onClick={onLocateClick}>LOCATE</a>
+        <a href="#" className={`btn-launch locate${isLocating ? ' disabled' : ''}`} key="launch-btn-locate" onClick={isLocating ? (e) => e.preventDefault() : onLocateClick} aria-disabled={isLocating}>{isLocating ? 'LOCATING…' : 'LOCATE'}</a>
         {locateError && <p className="locate-error" role="alert" style={{color: 'red', fontSize: '0.85em', marginTop: '0.4em'}}>{locateError}</p>}
       </div>
     );

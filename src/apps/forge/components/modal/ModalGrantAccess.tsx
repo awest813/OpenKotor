@@ -17,6 +17,7 @@ export const ModalGrantAccess = function(props: ModalGrantAccessProps){
   const appContext = useApp();
   const [showGrantModal, setShowGrantModal] = appContext.showGrantModal;
   const [grantError, setGrantError] = useState<GrantAccessError>(null);
+  const [isGranting, setIsGranting] = useState(false);
 
   useEffect(() => {
   }, []);
@@ -34,20 +35,25 @@ export const ModalGrantAccess = function(props: ModalGrantAccessProps){
   });
 
   const onBtnGrant = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    if(isGranting) return;
     setGrantError(null);
-    let handle = await KotOR.GameFileSystem.showRequestDirectoryDialog();
-    if(handle){
-      KotOR.ApplicationProfile.directoryHandle = handle;
-      KotOR.ConfigClient.set(`Profiles.${KotOR.ApplicationProfile.profile.key}.directory_handle`, handle);
-
-      ForgeState.VerifyGameDirectory(() => {
-        setShowGrantModal(false);
-        props.onUserGrant();
-      }, () => {
-        setGrantError('wrong-directory');
-      });
-    }else{
-      setGrantError('cancelled');
+    setIsGranting(true);
+    try{
+      let handle = await KotOR.GameFileSystem.showRequestDirectoryDialog();
+      if(handle){
+        KotOR.ApplicationProfile.directoryHandle = handle;
+        KotOR.ConfigClient.set(`Profiles.${KotOR.ApplicationProfile.profile.key}.directory_handle`, handle);
+        ForgeState.VerifyGameDirectory(() => {
+          setShowGrantModal(false);
+          props.onUserGrant();
+        }, () => {
+          setGrantError('wrong-directory');
+        });
+      }else{
+        setGrantError('cancelled');
+      }
+    }finally{
+      setIsGranting(false);
     }
   }
 
@@ -76,8 +82,8 @@ export const ModalGrantAccess = function(props: ModalGrantAccessProps){
           )}
         </div>
         <div className="modal-button-wrapper">
-          <button id="btn-grant-access" className="modal-button grant" onClick={onBtnGrant}>Grant Access</button>
-          <button id="btn-quit" className="modal-button quit" onClick={onBtnClose}>Quit</button>
+          <button id="btn-grant-access" className="modal-button grant" onClick={onBtnGrant} disabled={isGranting}>{isGranting ? 'Granting…' : 'Grant Access'}</button>
+          <button id="btn-quit" className="modal-button quit" onClick={onBtnClose} disabled={isGranting}>Quit</button>
         </div>
       </div>
     </div>

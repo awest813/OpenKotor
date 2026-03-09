@@ -13,21 +13,15 @@ export const LoadingScreen = function(props: any){
   const [render, rerender] = useState<boolean>(false);
 
   useEffect(() => {
-    //Constructor
-    console.log()
-    return () => {
-      //Destructor
-    };
+    return () => {};
   }, []);
 
   useEffect(() => {
     rerender(!render);
-    console.log('ls', enabled);
   }, [enabled]);
 
   useEffect(() => {
     rerender(!render);
-    console.log('ls', message);
   }, [message]);
 
   //style={{display: (enabled) ? 'block' : 'none'}}

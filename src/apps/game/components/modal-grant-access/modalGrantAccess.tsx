@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { KotORModal } from "../modal/modal";
 import { useApp } from "../../context/AppContext";
 import { ApplicationEnvironment } from "../../KotOR";
@@ -6,6 +6,7 @@ import { ApplicationEnvironment } from "../../KotOR";
 export const ModalGrantAccess = () => {
   const appContext = useApp();
   const [appState] = appContext.appState;
+  const [isGranting, setIsGranting] = useState(false);
 
   const onCancel = (e: React.MouseEvent<HTMLButtonElement>) => {
     alert("You must grant access to your local game directory to continue.");
@@ -51,31 +52,35 @@ export const ModalGrantAccess = () => {
   }
 
   const onOk = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    // Electron
-    if(appState.env == ApplicationEnvironment.ELECTRON){
-      await showElectronDirectoryPicker();
-      return;
-    }
-
-    // Browser
-    if(appState.env == ApplicationEnvironment.BROWSER){
-      const handle = await showBrowserDirectoryPicker();
-      if(!handle){
-        alert("Unable to access your local game directory. Please select your game install folder and try again.");
+    if(isGranting) return;
+    setIsGranting(true);
+    try{
+      if(appState.env == ApplicationEnvironment.ELECTRON){
+        await showElectronDirectoryPicker();
         return;
       }
-      appState.attachDirectoryHandle(handle);
+      if(appState.env == ApplicationEnvironment.BROWSER){
+        const handle = await showBrowserDirectoryPicker();
+        if(!handle){
+          alert("Unable to access your local game directory. Please select your game install folder and try again.");
+          return;
+        }
+        appState.attachDirectoryHandle(handle);
+      }
+    }finally{
+      setIsGranting(false);
     }
   }
 
   return (
-    <KotORModal 
-      title="Grant Access" 
-      show={true} 
-      onCancel={onCancel} 
-      onOk={onOk} 
-      cancelText="QUIT" 
-      okText="GRANT ACCESS"
+    <KotORModal
+      title="Grant Access"
+      show={true}
+      onCancel={onCancel}
+      onOk={onOk}
+      cancelText="QUIT"
+      okText={isGranting ? 'GRANTING…' : 'GRANT ACCESS'}
+      okDisabled={isGranting}
     >
       <span>Please grant this application access to your game install directory to continue.</span>
     </KotORModal>
