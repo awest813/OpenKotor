@@ -3205,7 +3205,7 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.STRING,
     args: [NWScriptDataType.INTEGER],
     action: function(this: NWScriptInstance, args: [number]){
-      return GameState.TLKManager.GetStringById( args[0] ).Value;
+      return GameState.TLKManager.GetStringById( args[0] )?.Value ?? '';
     }
   },
   240:{

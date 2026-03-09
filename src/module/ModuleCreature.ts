@@ -846,6 +846,7 @@ export class ModuleCreature extends ModuleObject {
     if(!(this.action)){
       const currentPlayer = GameState.getCurrentPlayer();
       if(
+        currentPlayer &&
         !this.combatData.combatState && 
         this.isPartyMember() && 
         this != currentPlayer && 
