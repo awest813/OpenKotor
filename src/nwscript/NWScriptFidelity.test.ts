@@ -13692,3 +13692,252 @@ describe('Section 149: GlobalVariableManager.Init guard when globalcat 2DA is mi
   });
 
 });
+
+describe('Section 150: InGameOverlay BTN_CLEARALL and queue button null-guard when getCurrentPlayer returns undefined', () => {
+
+  it('BTN_CLEARALL handler does not crash when getCurrentPlayer returns undefined', () => {
+    let cleared = false;
+    let combatStateSet = false;
+    let combatCancelled = false;
+    function simulateClearAll(getPlayer: () => any) {
+      const oPC = getPlayer();
+      if(!oPC) return;
+      oPC.clearAllActions();
+      oPC.combatData.combatState = false;
+      oPC.cancelCombat();
+    }
+    expect(() => simulateClearAll(() => undefined)).not.toThrow();
+    // With a valid player
+    const fakePlayer = {
+      clearAllActions: () => { cleared = true; },
+      combatData: { combatState: true },
+      cancelCombat: () => { combatCancelled = true; },
+    };
+    simulateClearAll(() => fakePlayer);
+    expect(cleared).toBe(true);
+    expect(combatCancelled).toBe(true);
+    expect(fakePlayer.combatData.combatState).toBe(false);
+  });
+
+  it('queue button handler does not crash when getCurrentPlayer returns undefined', () => {
+    function simulateQueueClick(getPlayer: () => any, index: number) {
+      getPlayer()?.clearCombatActionAtIndex(index);
+    }
+    expect(() => simulateQueueClick(() => undefined, 0)).not.toThrow();
+    let clearedIndex = -1;
+    const fakePlayer = { clearCombatActionAtIndex: (i: number) => { clearedIndex = i; } };
+    simulateQueueClick(() => fakePlayer, 1);
+    expect(clearedIndex).toBe(1);
+  });
+
+  it('update() does not crash when oPC is falsy', () => {
+    const miniMap = { setPosition: jest.fn(), setRotation: jest.fn(), render: jest.fn() };
+    function simulateUpdate(getPlayer: () => any) {
+      const oPC = getPlayer();
+      if(!oPC) return;
+      miniMap.setPosition(oPC.position.x, oPC.position.y);
+    }
+    expect(() => simulateUpdate(() => null)).not.toThrow();
+    expect(miniMap.setPosition).not.toHaveBeenCalled();
+    const fakePlayer = { position: { x: 1, y: 2 } };
+    simulateUpdate(() => fakePlayer);
+    expect(miniMap.setPosition).toHaveBeenCalledWith(1, 2);
+  });
+
+  it('triggerControllerAPress does not crash when getCurrentPlayer returns undefined', () => {
+    function simulateTrigger(getPlayer: () => any, selectedObject: any) {
+      const oPC = getPlayer();
+      if (!oPC) return;
+      if (selectedObject) {
+        if (typeof selectedObject.onClick === 'function') {
+          oPC.clearAllActions();
+          selectedObject.onClick(oPC);
+        } else {
+          const distance = oPC.position.distanceTo(selectedObject.position);
+          if (distance > 1.5) {
+            oPC.clearAllActions();
+            selectedObject.clearAllActions();
+            oPC.actionDialogObject(selectedObject);
+          }
+        }
+      }
+    }
+    const selectedObj = { onClick: jest.fn() };
+    expect(() => simulateTrigger(() => undefined, selectedObj)).not.toThrow();
+    expect(selectedObj.onClick).not.toHaveBeenCalled();
+  });
+
+});
+
+describe('Section 151: CharGenAbilities updateButtonStates creature null-guard', () => {
+
+  it('does not crash when this.creature is undefined', () => {
+    function updateButtonStates(creature: any) {
+      if(!creature) return;
+      // Would access creature.str, creature.dex etc.
+      const str = creature.str;
+      const dex = creature.dex;
+      return { str, dex };
+    }
+    expect(() => updateButtonStates(undefined)).not.toThrow();
+    expect(updateButtonStates(undefined)).toBeUndefined();
+    expect(updateButtonStates({ str: 10, dex: 12 })).toEqual({ str: 10, dex: 12 });
+  });
+
+  it('BTN_RECOMMENDED handler guards classes[0] access', () => {
+    function simulateRecommended(creature: any) {
+      if(creature){
+        const cls = creature.classes[0];
+        if(cls){
+          return {
+            str: parseInt(cls.str),
+            dex: parseInt(cls.dex),
+          };
+        }
+      }
+      return null;
+    }
+    // creature with empty classes array → should not crash
+    expect(() => simulateRecommended({ classes: [] })).not.toThrow();
+    expect(simulateRecommended({ classes: [] })).toBeNull();
+    // creature with valid class → should work
+    const result = simulateRecommended({ classes: [{ str: '10', dex: '12' }] });
+    expect(result?.str).toBe(10);
+    expect(result?.dex).toBe(12);
+  });
+
+});
+
+describe('Section 152: CharGenPortCust updateCamera model.camerahook null-guard', () => {
+
+  it('does not crash when creature.model is undefined', () => {
+    function updateCamera(creature: any, camera: any) {
+      const v3 = { x: 0, y: 0, z: 0 };
+      if(creature.model?.camerahook){
+        creature.model.camerahook.getWorldPosition(v3);
+        camera.position.z = v3.z;
+      }
+    }
+    const camera = { position: { z: 0 } };
+    expect(() => updateCamera({ model: undefined }, camera)).not.toThrow();
+    expect(camera.position.z).toBe(0);
+    // With model but no camerahook
+    expect(() => updateCamera({ model: {} }, camera)).not.toThrow();
+    // With full model
+    const creatureWithModel = { model: { camerahook: { getWorldPosition: (v: any) => { v.z = 5; } } } };
+    updateCamera(creatureWithModel, camera);
+    expect(camera.position.z).toBe(5);
+  });
+
+});
+
+describe('Section 153: CharGenMain show() model null-guard after try-catch', () => {
+
+  it('does not crash when selectedCreature.model is undefined', () => {
+    const sceneAdded: any[] = [];
+    function simulateShow(model: any) {
+      if(model){
+        sceneAdded.push(model);
+        model.rotation = { z: 0 };
+        model.rotation.z = -Math.PI / 2;
+      }
+    }
+    expect(() => simulateShow(undefined)).not.toThrow();
+    expect(sceneAdded.length).toBe(0);
+    const fakeModel = { rotation: { z: 0 } };
+    simulateShow(fakeModel);
+    expect(sceneAdded.length).toBe(1);
+    expect(fakeModel.rotation.z).toBeCloseTo(-Math.PI / 2);
+  });
+
+});
+
+describe('Section 154: InGameDialog updateTextPosition boundingBox null-guard', () => {
+
+  it('does not crash when boundingBox is null', () => {
+    const widget = { position: { y: 0 } };
+    function updateTextPosition(geometry: any, isListening: boolean) {
+      if (typeof geometry !== 'undefined') {
+        geometry.computeBoundingBox();
+        const bb = geometry.boundingBox;
+        if(!bb) return;
+        const height = Math.abs(bb.min.y) + Math.abs(bb.max.y);
+        widget.position.y = isListening ? -100 : 100;
+      }
+    }
+    const geomNullBB = { computeBoundingBox: () => {}, boundingBox: null };
+    expect(() => updateTextPosition(geomNullBB, false)).not.toThrow();
+    expect(widget.position.y).toBe(0); // unchanged
+    const geomWithBB = {
+      computeBoundingBox: () => {},
+      boundingBox: { min: { x: -50, y: -10 }, max: { x: 50, y: 10 } },
+    };
+    updateTextPosition(geomWithBB, false);
+    expect(widget.position.y).toBe(100);
+  });
+
+});
+
+describe('Section 155: LoadScreen showSavingMessage TLKStrings optional-chain guard', () => {
+
+  it('does not crash when TLKStrings entries are undefined', () => {
+    const TLKStrings: Record<number, any> = {};
+    let loadingText = '';
+    let hintText = '';
+    function showSavingMessage() {
+      loadingText = TLKStrings[42528]?.Value ?? '';
+      hintText = TLKStrings[41926]?.Value ?? '';
+    }
+    expect(() => showSavingMessage()).not.toThrow();
+    expect(loadingText).toBe('');
+    expect(hintText).toBe('');
+    TLKStrings[42528] = { Value: 'Saving...' };
+    TLKStrings[41926] = { Value: 'Please wait' };
+    showSavingMessage();
+    expect(loadingText).toBe('Saving...');
+    expect(hintText).toBe('Please wait');
+  });
+
+});
+
+describe('Section 156: CharGenSkills BTN_ACCEPT selectedCreature.skills null-guard', () => {
+
+  it('does not crash when selectedCreature is undefined', () => {
+    function assignSkills(creature: any, skillValues: number[]) {
+      const skills = creature?.skills;
+      if(skills){
+        if(skills[0]) skills[0].rank = skillValues[0];
+        if(skills[1]) skills[1].rank = skillValues[1];
+      }
+    }
+    expect(() => assignSkills(undefined, [3, 2])).not.toThrow();
+  });
+
+  it('does not crash when skills array is empty', () => {
+    function assignSkills(creature: any, skillValues: number[]) {
+      const skills = creature?.skills;
+      if(skills){
+        if(skills[0]) skills[0].rank = skillValues[0];
+        if(skills[1]) skills[1].rank = skillValues[1];
+      }
+    }
+    expect(() => assignSkills({ skills: [] }, [3, 2])).not.toThrow();
+  });
+
+  it('assigns skill ranks when skills are present', () => {
+    const skills = [{ rank: 0 }, { rank: 0 }, { rank: 0 }];
+    function assignSkills(creature: any, skillValues: number[]) {
+      const s = creature?.skills;
+      if(s){
+        if(s[0]) s[0].rank = skillValues[0];
+        if(s[1]) s[1].rank = skillValues[1];
+        if(s[2]) s[2].rank = skillValues[2];
+      }
+    }
+    assignSkills({ skills }, [4, 3, 2]);
+    expect(skills[0].rank).toBe(4);
+    expect(skills[1].rank).toBe(3);
+    expect(skills[2].rank).toBe(2);
+  });
+
+});

@@ -78,14 +78,23 @@ export class CharGenSkills extends GameMenu {
       this.BTN_ACCEPT.addEventListener('click', (e) => {
         e.stopPropagation();
         console.log('CharGenSkills', 'Assigning skillpoints')
-        GameState.CharGenManager.selectedCreature.skills[0].rank = GameState.CharGenManager.computerUse;
-        GameState.CharGenManager.selectedCreature.skills[1].rank = GameState.CharGenManager.demolitions;
-        GameState.CharGenManager.selectedCreature.skills[2].rank = GameState.CharGenManager.stealth;
-        GameState.CharGenManager.selectedCreature.skills[3].rank = GameState.CharGenManager.awareness;
-        GameState.CharGenManager.selectedCreature.skills[4].rank = GameState.CharGenManager.persuade;
-        GameState.CharGenManager.selectedCreature.skills[5].rank = GameState.CharGenManager.repair;
-        GameState.CharGenManager.selectedCreature.skills[6].rank = GameState.CharGenManager.security;
-        GameState.CharGenManager.selectedCreature.skills[7].rank = GameState.CharGenManager.treatInjury;
+        const creature = GameState.CharGenManager.selectedCreature;
+        const skills = creature?.skills;
+        if(skills){
+          const skillRanks = [
+            GameState.CharGenManager.computerUse,
+            GameState.CharGenManager.demolitions,
+            GameState.CharGenManager.stealth,
+            GameState.CharGenManager.awareness,
+            GameState.CharGenManager.persuade,
+            GameState.CharGenManager.repair,
+            GameState.CharGenManager.security,
+            GameState.CharGenManager.treatInjury,
+          ];
+          for(let i = 0; i < skillRanks.length; i++){
+            if(skills[i]) skills[i].rank = skillRanks[i];
+          }
+        }
         this.close();
       });
 

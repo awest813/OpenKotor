@@ -93,12 +93,15 @@ export class CharGenAbilities extends GameMenu {
       this.BTN_RECOMMENDED.addEventListener('click', (e) => {
         GameState.CharGenManager.availPoints = 0;
         if(this.creature){
-          GameState.CharGenManager.str = parseInt(this.creature.classes[0].str as any);
-          GameState.CharGenManager.dex = parseInt(this.creature.classes[0].dex as any);
-          GameState.CharGenManager.con = parseInt(this.creature.classes[0].con as any);
-          GameState.CharGenManager.wis = parseInt(this.creature.classes[0].wis as any);
-          GameState.CharGenManager.int = parseInt(this.creature.classes[0].int as any);
-          GameState.CharGenManager.cha = parseInt(this.creature.classes[0].cha as any);
+          const cls = this.creature.classes[0];
+          if(cls){
+            GameState.CharGenManager.str = parseInt(cls.str as any);
+            GameState.CharGenManager.dex = parseInt(cls.dex as any);
+            GameState.CharGenManager.con = parseInt(cls.con as any);
+            GameState.CharGenManager.wis = parseInt(cls.wis as any);
+            GameState.CharGenManager.int = parseInt(cls.int as any);
+            GameState.CharGenManager.cha = parseInt(cls.cha as any);
+          }
         }
 
         this.updateButtonStates();
@@ -241,6 +244,7 @@ export class CharGenAbilities extends GameMenu {
   }
 
   updateButtonStates(){
+    if(!this.creature) return;
     this.STR_POINTS_BTN.setText(GameState.CharGenManager.str);
     this.DEX_POINTS_BTN.setText(GameState.CharGenManager.dex);
     this.CON_POINTS_BTN.setText(GameState.CharGenManager.con);
