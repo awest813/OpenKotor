@@ -263,8 +263,10 @@ export class CharGenPortCust extends GameMenu {
       this._3dView.camera.quaternion.copy(this.sceneModel3D.camerahookf.quaternion);
     }
     let v3 = new THREE.Vector3();
-    creature.model.camerahook.getWorldPosition(v3)
-    this._3dView.camera.position.z = v3.z;
+    if(creature.model?.camerahook){
+      creature.model.camerahook.getWorldPosition(v3);
+      this._3dView.camera.position.z = v3.z;
+    }
   }
     
 }

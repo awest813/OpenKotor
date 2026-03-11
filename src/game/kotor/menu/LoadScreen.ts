@@ -83,8 +83,8 @@ export class LoadScreen extends GameMenu {
   }
 
   showSavingMessage() {
-    this.LBL_LOADING.setText(GameState.TLKManager.TLKStrings[42528].Value);
-    this.LBL_HINT.setText(GameState.TLKManager.TLKStrings[41926].Value);
+    this.LBL_LOADING.setText(GameState.TLKManager.TLKStrings[42528]?.Value ?? '');
+    this.LBL_HINT.setText(GameState.TLKManager.TLKStrings[41926]?.Value ?? '');
     this.setProgress(0);
   }
 

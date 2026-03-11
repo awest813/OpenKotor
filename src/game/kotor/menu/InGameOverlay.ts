@@ -361,9 +361,11 @@ export class InGameOverlay extends GameMenu {
 
       this.BTN_CLEARALL.addEventListener('click', (e) => {
         e.stopPropagation();
-        GameState.getCurrentPlayer().clearAllActions();
-        GameState.getCurrentPlayer().combatData.combatState = false;
-        GameState.getCurrentPlayer().cancelCombat();
+        const oPC = GameState.getCurrentPlayer();
+        if(!oPC) return;
+        oPC.clearAllActions();
+        oPC.combatData.combatState = false;
+        oPC.cancelCombat();
       });
 
       this.LBL_QUEUE0.addEventListener('click', (e) => {
@@ -373,17 +375,17 @@ export class InGameOverlay extends GameMenu {
 
       this.LBL_QUEUE1.addEventListener('click', (e) => {
         e.stopPropagation();
-        GameState.getCurrentPlayer().clearCombatActionAtIndex(0);
+        GameState.getCurrentPlayer()?.clearCombatActionAtIndex(0);
       });
 
       this.LBL_QUEUE2.addEventListener('click', (e) => {
         e.stopPropagation();
-        GameState.getCurrentPlayer().clearCombatActionAtIndex(1);
+        GameState.getCurrentPlayer()?.clearCombatActionAtIndex(1);
       });
 
       this.LBL_QUEUE3.addEventListener('click', (e) => {
         e.stopPropagation();
-        GameState.getCurrentPlayer().clearCombatActionAtIndex(2);
+        GameState.getCurrentPlayer()?.clearCombatActionAtIndex(2);
       });
 
       for(let i = 0; i < GameState.ActionMenuManager.TARGET_MENU_COUNT; i++){
@@ -948,6 +950,7 @@ export class InGameOverlay extends GameMenu {
     if (GameState.module?.area?.miniGame) { return; }
 
     const oPC = GameState.getCurrentPlayer();
+    if(!oPC) return;
     GameState.ActionMenuManager.SetPC(oPC);
     GameState.ActionMenuManager.SetTarget(GameState.CursorManager.selectedObject);
     GameState.ActionMenuManager.UpdateMenuActions();
@@ -1066,16 +1069,18 @@ export class InGameOverlay extends GameMenu {
   }
 
   triggerControllerAPress() {
+    const oPC = GameState.getCurrentPlayer();
+    if (!oPC) return;
     if (GameState.CursorManager.selectedObject) {
       if (typeof GameState.CursorManager.selectedObject.onClick === 'function') {
-        GameState.getCurrentPlayer().clearAllActions();
-        GameState.CursorManager.selectedObject.onClick(GameState.getCurrentPlayer());
+        oPC.clearAllActions();
+        GameState.CursorManager.selectedObject.onClick(oPC);
       } else {
-        let distance = GameState.getCurrentPlayer().position.distanceTo(GameState.CursorManager.selectedObject.position);
+        let distance = oPC.position.distanceTo(GameState.CursorManager.selectedObject.position);
         if (distance > 1.5) {
-          GameState.getCurrentPlayer().clearAllActions();
+          oPC.clearAllActions();
           GameState.CursorManager.selectedObject.clearAllActions();
-          GameState.getCurrentPlayer().actionDialogObject(GameState.CursorManager.selectedObject);
+          oPC.actionDialogObject(GameState.CursorManager.selectedObject);
         }
       }
     }

@@ -124,6 +124,7 @@ export class InGameDialog extends GameMenu {
     if (typeof this.LBL_MESSAGE.text.geometry !== 'undefined') {
       this.LBL_MESSAGE.text.geometry.computeBoundingBox();
       let bb = this.LBL_MESSAGE.text.geometry.boundingBox;
+      if(!bb) return;
       let height = Math.abs(bb.min.y) + Math.abs(bb.max.y);
       let width = Math.abs(bb.min.x) + Math.abs(bb.max.x);
       if (isListening) {
