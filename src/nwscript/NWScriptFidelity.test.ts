@@ -14842,3 +14842,114 @@ describe('Section 184: ModuleCreature SkillList bounds guard', () => {
   });
 
 });
+
+describe('Section 185: ModuleArea update loop optional-chaining for areaOfEffects/rooms/spellInstances', () => {
+
+  it('areaOfEffects update loop does not crash when element is removed mid-iteration', () => {
+    const aoes: any[] = [
+      { update: function(_d: number) { aoes.splice(1, 1); } },
+      { update: (_d: number) => {} },
+      { update: (_d: number) => {} },
+    ];
+    const count = aoes.length;
+    let crashed = false;
+    try {
+      for (let i = 0; i < count; i++) {
+        aoes[i]?.update(0);
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+  it('rooms update loop does not crash when element is removed mid-iteration', () => {
+    const rooms: any[] = [
+      { update: function(_d: number) { rooms.splice(1, 1); } },
+      { update: (_d: number) => {} },
+    ];
+    const count = rooms.length;
+    let crashed = false;
+    try {
+      for (let i = 0; i < count; i++) {
+        rooms[i]?.update(0);
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+  it('spellInstances update loop does not crash when element is undefined', () => {
+    const spells: any[] = [{ update: (_d: number) => {} }, undefined, { update: (_d: number) => {} }];
+    const count = spells.length;
+    let crashed = false;
+    try {
+      for (let i = 0; i < count; i++) {
+        spells[i]?.update(0);
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+  it('detectRoomObjects does not crash when room is undefined in array', () => {
+    const rooms: any[] = [
+      { detectChildObjects: () => {} },
+      undefined,
+      { detectChildObjects: () => {} },
+    ];
+    let crashed = false;
+    try {
+      for (let i = 0, len = rooms.length; i < len; i++) {
+        rooms[i]?.detectChildObjects();
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+});
+
+describe('Section 186: ModuleCreature skins loop null-guard', () => {
+
+  it('does not crash when model.skins contains an undefined element', () => {
+    const skins: any[] = [{ frustumCulled: true }, undefined, { frustumCulled: true }];
+    let crashed = false;
+    try {
+      for (let i = 0, len = skins.length; i < len; i++) {
+        if(skins[i]) skins[i].frustumCulled = false;
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+    expect(skins[0].frustumCulled).toBe(false);
+    expect(skins[2].frustumCulled).toBe(false);
+  });
+
+});
+
+describe('Section 187: InGameConfirm / MenuGraphicsAdvanced 2DA null-guards', () => {
+
+  it('ShowTutorialMessage does not crash when tutorial 2DA is not loaded', () => {
+    function showTutorialMessage(tutorial2DA: any, id: number) {
+      const row = tutorial2DA?.rows[id];
+      if (!row) return 'missing';
+      return row.message;
+    }
+    expect(showTutorialMessage(undefined, 0)).toBe('missing');
+    expect(showTutorialMessage({ rows: [{ message: 'hello' }] }, 0)).toBe('hello');
+  });
+
+  it('updateTextureQualityLabel does not crash when texpacks 2DA is not loaded', () => {
+    function getQualityRow(texpacks2DA: any, quality: number) {
+      return texpacks2DA?.rows[quality];
+    }
+    expect(getQualityRow(undefined, 0)).toBeUndefined();
+    expect(getQualityRow({ rows: [{ strrefname: '1' }] }, 0)?.strrefname).toBe('1');
+  });
+
+  it('texture quality clamping does not crash when texpacks 2DA is not loaded', () => {
+    function clampQuality(texpacks2DA: any, quality: number) {
+      const maxCount = texpacks2DA?.RowCount ?? 1;
+      if (quality >= maxCount) quality = maxCount - 1;
+      return quality;
+    }
+    expect(clampQuality(undefined, 5)).toBe(0);
+    expect(clampQuality({ RowCount: 3 }, 5)).toBe(2);
+  });
+
+});

@@ -94,7 +94,7 @@ export class InGameConfirm extends GameMenu {
     if(GameState.TutorialWindowTracker[id]){
       return;
     }
-    const row = GameState.TwoDAManager.datatables.get('tutorial').rows[id];
+    const row = GameState.TwoDAManager.datatables.get('tutorial')?.rows[id];
     if(!row){
       return;
     }
