@@ -673,7 +673,7 @@ export class ModuleCreature extends ModuleObject {
           }
           if(this.cutsceneMode && this.model){
             for(let i = 0, len = this.model.skins.length; i < len; i++){
-              this.model.skins[i].frustumCulled = false;
+              if(this.model.skins[i]) this.model.skins[i].frustumCulled = false;
             }
           }
         }

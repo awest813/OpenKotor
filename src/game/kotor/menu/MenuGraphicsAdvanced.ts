@@ -60,7 +60,8 @@ export class MenuGraphicsAdvanced extends GameMenu {
       this.BTN_TEXQUALRIGHT.addEventListener('click', (e) => {
         let quality = GameState.iniConfig.getProperty('Graphics Options.Texture Quality') || 0;
         quality++;
-        if(quality >= GameState.TwoDAManager.datatables.get('texpacks').RowCount) quality = GameState.TwoDAManager.datatables.get('texpacks').RowCount-1;
+        const texpacksCount = GameState.TwoDAManager.datatables.get('texpacks')?.RowCount ?? 1;
+        if(quality >= texpacksCount) quality = texpacksCount - 1;
         GameState.iniConfig.setProperty('Graphics Options.Texture Quality', quality);
         this.updateTextureQualityLabel();
       });
@@ -108,8 +109,8 @@ export class MenuGraphicsAdvanced extends GameMenu {
 
   updateTextureQualityLabel() {
     const quality = GameState.iniConfig.getProperty('Graphics Options.Texture Quality') || 0;
-    
-    const _2darow = GameState.TwoDAManager.datatables.get('texpacks').rows[quality];
+    const texpacks2DA = GameState.TwoDAManager.datatables.get('texpacks');
+    const _2darow = texpacks2DA?.rows[quality];
     if (_2darow) {
       this.BTN_TEXQUAL.setText(GameState.TLKManager.GetStringById(_2darow.strrefname).Value);
     }
@@ -118,7 +119,7 @@ export class MenuGraphicsAdvanced extends GameMenu {
     } else {
       this.BTN_TEXQUALLEFT.show();
     }
-    if (quality >= GameState.TwoDAManager.datatables.get('texpacks').RowCount - 1) {
+    if (quality >= (texpacks2DA?.RowCount ?? 1) - 1) {
       this.BTN_TEXQUALRIGHT.hide();
     } else {
       this.BTN_TEXQUALRIGHT.show();

@@ -421,7 +421,7 @@ export class ModuleArea extends ModuleObject {
     
     //update aoe
     for(let i = 0; i < aoeCount; i++){
-      this.areaOfEffects[i].update(delta);
+      this.areaOfEffects[i]?.update(delta);
     }
 
     //update party
@@ -456,12 +456,12 @@ export class ModuleArea extends ModuleObject {
 
     //update rooms
     for(let i = 0; i < roomCount; i++){
-      this.rooms[i].update(delta);
+      this.rooms[i]?.update(delta);
       // this.rooms[i].hide();
     }
 
     for(let i = 0, spellCount = this.spellInstances.length; i < spellCount; i++){
-      this.spellInstances[i].update(delta);
+      this.spellInstances[i]?.update(delta);
     }
 
     let spellIndex = this.spellInstances.length;
@@ -534,7 +534,7 @@ export class ModuleArea extends ModuleObject {
 
     //update aoe
     for(let i = 0; i < aoeCount; i++){
-      this.areaOfEffects[i].updatePaused(delta);
+      this.areaOfEffects[i]?.updatePaused(delta);
     }
 
     //update party
@@ -2132,7 +2132,7 @@ export class ModuleArea extends ModuleObject {
 
   detectRoomObjects(){
     for(let i = 0, len = this.rooms.length; i < len; i++){
-      this.rooms[i].detectChildObjects();
+      this.rooms[i]?.detectChildObjects();
     }
   }
 
