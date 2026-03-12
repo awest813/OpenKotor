@@ -103,7 +103,7 @@ export class CharGenFeats extends GameMenu {
       const feat = GameState.SWRuleSet.feats[i];
       if(this.creature){
         const mainClass = this.creature.getMainClass();
-        if (mainClass && feat.constant != '****') {
+        if (mainClass && feat?.constant != '****') {
           if (mainClass.isFeatAvailable(feat)) {
             const status = mainClass.getFeatStatus(feat);
             if (status == 3 && this.creature.getTotalClassLevel() >= mainClass.getFeatGrantedLevel(feat)) {
@@ -128,7 +128,7 @@ export class CharGenFeats extends GameMenu {
       if(mainClass){
         for (let i = 0; i < featCount; i++) {
           const feat = feats[i];
-          if (feat.constant != '****') {
+          if (feat?.constant != '****') {
             if (mainClass.isFeatAvailable(feat)) {
               const status = mainClass.getFeatStatus(feat);
               if (this.creature.getHasFeat(i) || status == 0 || status == 1) {
@@ -149,6 +149,7 @@ export class CharGenFeats extends GameMenu {
         group.push(feat);
         for (let j = 0; j < featCount; j++) {
           const chainFeat = GameState.SWRuleSet.feats[j];
+          if (!chainFeat) continue;
           if (chainFeat.prereqFeat1 == i || chainFeat.prereqFeat2 == i) {
             if (chainFeat.prereqFeat1 != -1 && chainFeat.prereqFeat2 != -1) {
               group[2] = chainFeat;

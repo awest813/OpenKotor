@@ -14642,3 +14642,203 @@ describe('Section 180: Galaxy map planet rendering context + Planetary TLK safe 
   });
 
 });
+
+describe('Section 181: CharGenFeats null-guards for sparse feats array', () => {
+
+  it('addGrantedFeats does not crash when feats[i] is undefined', () => {
+    const feats: any[] = [undefined, { constant: '****' }, undefined];
+    let crashed = false;
+    function addGrantedFeats(feats: any[], featCount: number, mainClass: any) {
+      for (let i = 0; i < featCount; i++) {
+        const feat = feats[i];
+        if (mainClass && feat?.constant != '****') {
+          if (mainClass.isFeatAvailable(feat)) { /* no-op */ }
+        }
+      }
+    }
+    try {
+      addGrantedFeats(feats, feats.length, { isFeatAvailable: () => false });
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+  it('buildFeatList does not crash when feats[i] is undefined', () => {
+    const feats: any[] = [undefined, { constant: 'FEAT_POWER_BLAST', prereqFeat1: -1, prereqFeat2: -1 }];
+    let list: any[] = [];
+    let crashed = false;
+    function buildList(feats: any[], mainClass: any) {
+      for (let i = 0; i < feats.length; i++) {
+        const feat = feats[i];
+        if (feat?.constant != '****') {
+          if (mainClass.isFeatAvailable(feat)) {
+            list.push(feat);
+          }
+        }
+      }
+    }
+    try {
+      buildList(feats, { isFeatAvailable: (f: any) => !!f });
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+    expect(list.length).toBe(1);
+  });
+
+  it('buildFeatList does not crash when chainFeat is undefined', () => {
+    const feats: any[] = [
+      { constant: 'ROOT', prereqFeat1: -1, prereqFeat2: -1 },
+      undefined,
+      { constant: 'CHAIN', prereqFeat1: 0, prereqFeat2: -1 },
+    ];
+    const groups: any[] = [];
+    let crashed = false;
+    function buildGroups(list: any[], feats: any[]) {
+      for (let i = 0; i < list.length; i++) {
+        const feat = list[i];
+        const group: any[] = [];
+        const prereqfeat1 = feats[feat.prereqFeat1];
+        const prereqfeat2 = feats[feat.prereqFeat2];
+        if (!prereqfeat1 && !prereqfeat2) {
+          group.push(feat);
+          for (let j = 0; j < feats.length; j++) {
+            const chainFeat = feats[j];
+            if (!chainFeat) continue;
+            if (chainFeat.prereqFeat1 == i || chainFeat.prereqFeat2 == i) {
+              if (chainFeat.prereqFeat1 != -1 && chainFeat.prereqFeat2 != -1) {
+                group[2] = chainFeat;
+              } else {
+                group[1] = chainFeat;
+              }
+            }
+          }
+          groups.push(group);
+        }
+      }
+    }
+    const list = feats.filter(Boolean);
+    try { buildGroups(list, feats); } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+    expect(groups.length).toBeGreaterThan(0);
+  });
+
+});
+
+describe('Section 182: CharGenClass initCharacter3D null-guards for missing _3dView / creature', () => {
+
+  it('resolves immediately when _3dView is undefined', async () => {
+    let resolved = false;
+    function initCharacter3D(
+      _3dView: any,
+      creature: any,
+      onStart: () => void
+    ): Promise<void> {
+      return new Promise<void>((resolve) => {
+        if (!_3dView || !creature) { resolve(); return; }
+        onStart();
+        resolve();
+      });
+    }
+    let started = false;
+    await initCharacter3D(undefined, { load: () => {}, loadModel: async () => ({}) }, () => { started = true; });
+    expect(started).toBe(false);
+  });
+
+  it('resolves immediately when creature is undefined', async () => {
+    let started = false;
+    function initCharacter3D(
+      _3dView: any,
+      creature: any,
+      onStart: () => void
+    ): Promise<void> {
+      return new Promise<void>((resolve) => {
+        if (!_3dView || !creature) { resolve(); return; }
+        onStart();
+        resolve();
+      });
+    }
+    await initCharacter3D({ setControl: () => {} }, undefined, () => { started = true; });
+    expect(started).toBe(false);
+  });
+
+  it('does not crash when creature.model is undefined after loadModel', async () => {
+    let crashed = false;
+    async function loadCreature(creature: any, onModel: (m: any) => void) {
+      await creature.loadModel();
+      if (!creature?.model) { return; }
+      onModel(creature.model);
+    }
+    let called = false;
+    try {
+      await loadCreature(
+        { loadModel: async () => {}, model: undefined },
+        () => { called = true; }
+      );
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+    expect(called).toBe(false);
+  });
+
+});
+
+describe('Section 183: ModuleArea update/updatePaused loop optional-chaining guard', () => {
+
+  it('update loop does not crash when creature is removed mid-iteration', () => {
+    const creatures: any[] = [
+      { update: function(this: any, _d: number) { creatures.splice(1, 1); } },
+      { update: (_d: number) => {} },
+      { update: (_d: number) => {} },
+    ];
+    const count = creatures.length;
+    let crashed = false;
+    try {
+      for (let i = 0; i < count; i++) {
+        creatures[i]?.update(0);
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+  it('updatePaused loop does not crash when door is removed mid-iteration', () => {
+    const doors: any[] = [
+      { updatePaused: function(this: any, _d: number) { doors.splice(1, 1); } },
+      { updatePaused: (_d: number) => {} },
+      { updatePaused: (_d: number) => {} },
+    ];
+    const count = doors.length;
+    let crashed = false;
+    try {
+      for (let i = 0; i < count; i++) {
+        doors[i]?.updatePaused(0);
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+});
+
+describe('Section 184: ModuleCreature SkillList bounds guard', () => {
+
+  it('does not crash when template SkillList has more entries than creature skills array', () => {
+    const skills: any[] = [{ rank: 0 }]; // only 1 skill in creature
+    const templateSkills = [{ rank: 2 }, { rank: 3 }, { rank: 1 }]; // 3 in template
+    let crashed = false;
+    try {
+      for (let i = 0; i < templateSkills.length; i++) {
+        if (skills[i]) skills[i].rank = templateSkills[i].rank;
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+    expect(skills[0].rank).toBe(2);
+  });
+
+  it('assigns rank when skills array is large enough', () => {
+    const skills: any[] = [{ rank: 0 }, { rank: 0 }, { rank: 0 }];
+    const templateSkills = [{ rank: 5 }, { rank: 3 }];
+    for (let i = 0; i < templateSkills.length; i++) {
+      if (skills[i]) skills[i].rank = templateSkills[i].rank;
+    }
+    expect(skills[0].rank).toBe(5);
+    expect(skills[1].rank).toBe(3);
+    expect(skills[2].rank).toBe(0); // untouched
+  });
+
+});

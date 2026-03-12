@@ -159,6 +159,7 @@ export class CharGenClass extends GameMenu {
       let _3dView = GameState.CharGenManager.lbl_3d_views.get(nth);
       let _3dViewModel = GameState.CharGenManager.models.get(nth);
       let creature = GameState.CharGenManager.creatures.get(nth);
+      if(!_3dView || !creature){ resolve(); return; }
       _3dView.setControl(control);
       _3dView.visible = true;
       control.border.fill.material.transparent = true;
@@ -176,6 +177,7 @@ export class CharGenClass extends GameMenu {
           _3dView.camera.position.z = 0.9;
           creature.load();
           creature.loadModel().then((creature_model: OdysseyModel3D) => {
+            if(!creature?.model){ resolve(); return; }
             creature.model.position.set(0, 0, 0);
             creature.model.rotation.z = -Math.PI / 2;
             _3dView.addModel(creature.model);

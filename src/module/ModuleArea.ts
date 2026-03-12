@@ -411,12 +411,12 @@ export class ModuleArea extends ModuleObject {
 
     //update triggers
     for(let i = 0; i < trigCount; i++){
-      this.triggers[i].update(delta);
+      this.triggers[i]?.update(delta);
     }
 
     //update encounters
     for(let i = 0; i < encounterCount; i++){
-      this.encounters[i].update(delta);
+      this.encounters[i]?.update(delta);
     }
     
     //update aoe
@@ -431,17 +431,17 @@ export class ModuleArea extends ModuleObject {
     
     //update creatures
     for(let i = 0; i < creatureCount; i++){
-      this.creatures[i].update(delta);
+      this.creatures[i]?.update(delta);
     }
     
     //update placeables
     for(let i = 0; i < placeableCount; i++){
-      this.placeables[i].update(delta);
+      this.placeables[i]?.update(delta);
     }
     
     //update doors
     for(let i = 0; i < doorCount; i++){
-      this.doors[i].update(delta);
+      this.doors[i]?.update(delta);
     }
 
     //unset party controlled
@@ -524,12 +524,12 @@ export class ModuleArea extends ModuleObject {
 
     //update triggers
     for(let i = 0; i < trigCount; i++){
-      this.triggers[i].updatePaused(delta);
+      this.triggers[i]?.updatePaused(delta);
     }
 
     //update encounters
     for(let i = 0; i < encounterCount; i++){
-      this.encounters[i].updatePaused(delta);
+      this.encounters[i]?.updatePaused(delta);
     }
 
     //update aoe
@@ -544,17 +544,17 @@ export class ModuleArea extends ModuleObject {
     
     //update creatures
     for(let i = 0; i < creatureCount; i++){
-      this.creatures[i].updatePaused(delta);
+      this.creatures[i]?.updatePaused(delta);
     }
     
     //update placeables
     for(let i = 0; i < placeableCount; i++){
-      this.placeables[i].updatePaused(delta);
+      this.placeables[i]?.updatePaused(delta);
     }
     
     //update doors
     for(let i = 0; i < doorCount; i++){
-      this.doors[i].updatePaused(delta);
+      this.doors[i]?.updatePaused(delta);
     }
 
     if(GameState.Mode == EngineMode.MINIGAME){
