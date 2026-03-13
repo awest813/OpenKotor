@@ -103,6 +103,7 @@ export class MenuMap extends GameMenu {
 
     if (!GameState.module?.area?.miniGame) {
       const oPC = GameState.getCurrentPlayer();
+      if(!oPC) return;
 
       //update minimap
       this.miniMap.setPosition(oPC.position.x, oPC.position.y);

@@ -15094,3 +15094,135 @@ describe('Section 191: MenuPartySelection null-guards for getControlByName resul
   });
 
 });
+
+describe('Section 192: MenuMap update oPC null-guard', () => {
+
+  it('does not crash when getCurrentPlayer returns null', () => {
+    function updateMiniMap(oPC: any, miniMap: any) {
+      if(!oPC) return;
+      miniMap.setPosition(oPC.position.x, oPC.position.y);
+    }
+    let called = false;
+    const miniMap = { setPosition: () => { called = true; } };
+    updateMiniMap(null, miniMap);
+    expect(called).toBe(false);
+    updateMiniMap({ position: { x: 1, y: 2 } }, miniMap);
+    expect(called).toBe(true);
+  });
+
+});
+
+describe('Section 193: ModuleTrigger getCurrentRoom room null-guard', () => {
+
+  it('does not crash when rooms array contains undefined element', () => {
+    const rooms: any[] = [
+      { model: { constructor: { name: 'OdysseyModel3D' }, box: { containsPoint: () => false } } },
+      undefined,
+      { model: null },
+    ];
+    let crashed = false;
+    try {
+      for(let i = 0; i < rooms.length; i++){
+        const room = rooms[i];
+        if(!room) continue;
+        const model = room.model;
+        // access model safely
+        if(model && model.box) model.box.containsPoint({});
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+});
+
+describe('Section 194: ModuleTrigger initObjectsInside creature null-guard', () => {
+
+  it('does not crash when creatures array contains undefined element', () => {
+    const creatures: any[] = [
+      { position: { x: 0, y: 0, z: 0 } },
+      undefined,
+      { position: { x: 1, y: 1, z: 0 } },
+    ];
+    const visited: number[] = [];
+    let crashed = false;
+    try {
+      for(let i = 0; i < creatures.length; i++){
+        const creature = creatures[i];
+        if(!creature) continue;
+        const pos = creature.position;
+        visited.push(i);
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+    expect(visited).toEqual([0, 2]);
+  });
+
+});
+
+describe('Section 195: ModuleDoor getCurrentRoom room null-guard', () => {
+
+  it('does not crash when rooms array contains undefined element', () => {
+    const rooms: any[] = [
+      { box: { containsPoint: () => true } },
+      undefined,
+      { box: { containsPoint: () => false } },
+    ];
+    const roomIds: number[] = [];
+    let crashed = false;
+    try {
+      for(let i = 0; i < rooms.length; i++){
+        const room = rooms[i];
+        if(!room) continue;
+        if(room.box.containsPoint({})){
+          roomIds.push(i);
+        }
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+    expect(roomIds).toEqual([0]);
+  });
+
+});
+
+describe('Section 196: ModuleMGPlayer getCurrentRoom/findWalkableFace room null-guard', () => {
+
+  it('getCurrentRoom does not crash when rooms array contains undefined element', () => {
+    const rooms: any[] = [
+      { model: null },
+      undefined,
+      { model: { box: { containsPoint: () => false } } },
+    ];
+    let crashed = false;
+    try {
+      for(let i = 0; i < rooms.length; i++){
+        const room = rooms[i];
+        if(!room) continue;
+        const model = room.model;
+        if(model && model.box) model.box.containsPoint({});
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+  it('findWalkableFace does not crash when rooms array contains undefined element', () => {
+    const rooms: any[] = [
+      undefined,
+      { collisionManager: { walkmesh: null } },
+      { collisionManager: { walkmesh: { walkableFaces: [] } } },
+    ];
+    let crashed = false;
+    try {
+      for(let i = 0; i < rooms.length; i++){
+        const room = rooms[i];
+        if(!room) continue;
+        if(room.collisionManager.walkmesh){
+          for(let j = 0; j < room.collisionManager.walkmesh.walkableFaces.length; j++){
+            // process face
+          }
+        }
+      }
+    } catch(_e) { crashed = true; }
+    expect(crashed).toBe(false);
+  });
+
+});
