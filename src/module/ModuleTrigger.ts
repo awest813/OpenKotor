@@ -117,6 +117,7 @@ export class ModuleTrigger extends ModuleObject {
     let _distance = 1000000000;
     for(let i = 0; i < GameState.module.area.rooms.length; i++){
       let room = GameState.module.area.rooms[i];
+      if(!room) continue;
       let model = room.model;
       if(model instanceof OdysseyModel3D){
         let pos = this.position.clone();
@@ -283,6 +284,7 @@ export class ModuleTrigger extends ModuleObject {
       const creatureLen = GameState.module.area.creatures.length;
       for(let i = 0; i < creatureLen; i++){
         const creature = GameState.module.area.creatures[i];
+        if(!creature) continue;
         const pos = creature.position;
         if(!this.box.containsPoint(pos)){ continue; }
 

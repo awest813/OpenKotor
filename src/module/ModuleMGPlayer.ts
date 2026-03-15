@@ -662,6 +662,7 @@ export class ModuleMGPlayer extends ModuleObject {
       this.rooms = [];
       for(let i = 0; i < GameState.module.area.rooms.length; i++){
         let room = GameState.module.area.rooms[i];
+        if(!room) continue;
         let model = room.model;
         if(model instanceof OdysseyModel3D){
           if(model.box.containsPoint(this.position)){
@@ -711,6 +712,7 @@ export class ModuleMGPlayer extends ModuleObject {
     let room;
     for(let i = 0, il = GameState.module.area.rooms.length; i < il; i++){
       room = GameState.module.area.rooms[i];
+      if(!room) continue;
       if(room.collisionManager.walkmesh){
         for(let j = 0, jl = room.collisionManager.walkmesh.walkableFaces.length; j < jl; j++){
           face = room.collisionManager.walkmesh.walkableFaces[j];

@@ -817,6 +817,7 @@ export class ModuleDoor extends ModuleObject {
     if(!GameState.module?.area) return;
     for(let i = 0; i < GameState.module.area.rooms.length; i++){
       let room = GameState.module.area.rooms[i];
+      if(!room) continue;
       if(room.box.containsPoint(this.position)){
         this.roomIds.push(i);
       }
