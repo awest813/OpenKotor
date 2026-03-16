@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { GameMenu, LBL_3DView } from "../../../gui";
 import type { GUILabel } from "../../../gui";
 import { TextureLoader } from "../../../loaders";

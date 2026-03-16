@@ -148,9 +148,9 @@ export class VideoManager {
     if (VideoManager.uTex) VideoManager.uTex.dispose();
     if (VideoManager.vTex) VideoManager.vTex.dispose();
 
-    VideoManager.yTex = new THREE.DataTexture(yBuffer, yStride, yBh, THREE.LuminanceFormat, THREE.UnsignedByteType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
-    VideoManager.uTex = new THREE.DataTexture(uBuffer, cStride, cBh, THREE.LuminanceFormat, THREE.UnsignedByteType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
-    VideoManager.vTex = new THREE.DataTexture(vBuffer, cStride, cBh, THREE.LuminanceFormat, THREE.UnsignedByteType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
+    VideoManager.yTex = new THREE.DataTexture(yBuffer, yStride, yBh, (THREE as any).LuminanceFormat, THREE.UnsignedByteType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
+    VideoManager.uTex = new THREE.DataTexture(uBuffer, cStride, cBh, (THREE as any).LuminanceFormat, THREE.UnsignedByteType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
+    VideoManager.vTex = new THREE.DataTexture(vBuffer, cStride, cBh, (THREE as any).LuminanceFormat, THREE.UnsignedByteType, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping, THREE.LinearFilter, THREE.LinearFilter);
 
     if (VideoManager.material?.uniforms) {
       VideoManager.material.uniforms.yTex.value = VideoManager.yTex;

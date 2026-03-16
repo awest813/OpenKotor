@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { AudioLoader } from "../../../audio/AudioLoader";
 import { CurrentGame } from "../../../engine/CurrentGame";
 import { MenuSaveLoadMode } from "../../../enums/gui/MenuSaveLoadMode";

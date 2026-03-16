@@ -451,8 +451,8 @@ export class LBL_MapView {
       texWidth = this.mapTexture.mipmaps[0].width;
       texHeight = this.mapTexture.mipmaps[0].height;
     }else if(this.mapTexture.source.data){
-      texWidth = this.mapTexture.source.data.width;
-      texHeight = this.mapTexture.source.data.height;
+      texWidth = (this.mapTexture.source.data as any).width;
+      texHeight = (this.mapTexture.source.data as any).height;
     }
 
     return { width: texWidth, height: texHeight };

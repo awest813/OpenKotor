@@ -572,7 +572,7 @@ export class OdysseyModel3D extends OdysseyObject3D {
         }
       }
     }else{
-      this.dispatchEvent({type: 'playEvent', event: event});
+      (this as any).dispatchEvent({type: 'playEvent', event: event});
     }
 
   }
@@ -870,7 +870,7 @@ export class OdysseyModel3D extends OdysseyObject3D {
               if(!geometries.length){ continue; }
 
               // Pre-merge geometries that use the same material
-              const mergedGeometry = BufferGeometryUtils.mergeBufferGeometries(geometries, true);
+              const mergedGeometry = (BufferGeometryUtils as any).mergeBufferGeometries(geometries, true);
               finalGeometries.push(mergedGeometry);
               finalMaterials.push(material);
               
@@ -882,7 +882,7 @@ export class OdysseyModel3D extends OdysseyObject3D {
             
             // Final merge of all pre-merged geometries
             if(finalGeometries.length > 0){
-              odysseyModel.mergedBufferGeometry = BufferGeometryUtils.mergeBufferGeometries(finalGeometries, true);
+              odysseyModel.mergedBufferGeometry = (BufferGeometryUtils as any).mergeBufferGeometries(finalGeometries, true);
               odysseyModel.mergedMesh = new THREE.Mesh(odysseyModel.mergedBufferGeometry, finalMaterials);
               odysseyModel.mergedMesh.receiveShadow = true;
               odysseyModel.add(odysseyModel.mergedMesh);
@@ -900,7 +900,7 @@ export class OdysseyModel3D extends OdysseyObject3D {
           //Merge Dangly Geometries
           if(odysseyModel.mergedDanglyGeometries.length){
 
-            odysseyModel.mergedBufferDanglyGeometry = BufferGeometryUtils.mergeBufferGeometries(odysseyModel.mergedDanglyGeometries, true);
+            odysseyModel.mergedBufferDanglyGeometry = (BufferGeometryUtils as any).mergeBufferGeometries(odysseyModel.mergedDanglyGeometries, true);
             odysseyModel.mergedDanglyMesh = new THREE.Mesh(odysseyModel.mergedBufferDanglyGeometry, odysseyModel.mergedDanglyMaterials);
             //odysseyModel.mergedDanglyMesh.receiveShadow = true;
             odysseyModel.add(odysseyModel.mergedDanglyMesh);
@@ -1406,7 +1406,7 @@ export class OdysseyModel3D extends OdysseyObject3D {
 
       if(material instanceof THREE.ShaderMaterial){
         material.uniforms.shininess.value = 0.0000001;
-        material.extensions.derivatives = true;
+        (material.extensions as any).derivatives = true;
         //material.extensions.fragDepth = true;
         if(options.useTweakColor){
           material.uniforms.diffuse.value = new THREE.Color( odysseyNode.diffuse.r, odysseyNode.diffuse.g, odysseyNode.diffuse.b );

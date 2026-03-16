@@ -22,12 +22,12 @@ export class OdysseyTexture extends THREE.Texture {
     mapping?: THREE.Mapping,
     wrapS?: THREE.Wrapping,
     wrapT?: THREE.Wrapping,
-    magFilter?: THREE.TextureFilter,
-    minFilter?: THREE.TextureFilter,
+    magFilter?: THREE.MagnificationTextureFilter,
+    minFilter?: THREE.MinificationTextureFilter,
     format?: THREE.PixelFormat|THREE.CompressedPixelFormat,
     type?: THREE.TextureDataType,
     anisotropy?: number,
-    encoding?: THREE.TextureEncoding,
+    encoding?: any,
   ){
     super(image, mapping, wrapS, wrapT, magFilter, minFilter, format as THREE.PixelFormat, type, anisotropy, encoding);
     this.txi = new TXI();

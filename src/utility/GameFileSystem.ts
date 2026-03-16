@@ -389,12 +389,12 @@ export class GameFileSystem {
       dirPath = dirPath.trim();
       if(ApplicationProfile.ENV == ApplicationEnvironment.ELECTRON){
         console.log(`fs.rmdir`, path.join(ApplicationProfile.directory, dirPath));
-        fs.rmdir(
-          path.join(ApplicationProfile.directory, dirPath), 
+        (fs.rmdir as any)(
+          path.join(ApplicationProfile.directory, dirPath),
           {
             recursive: opts.recursive
-          } as fs.RmDirOptions, 
-          async (err) => {
+          },
+          async (err: any) => {
             if(err){
               console.error(err);
               resolve(false);

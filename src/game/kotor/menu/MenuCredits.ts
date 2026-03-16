@@ -42,7 +42,7 @@ export class MenuCredits extends GameMenu {
     if(skipInit) return;
     return new Promise<void>((resolve, reject) => {
       // Allow a click anywhere on the credits to skip to the end
-      this.tGuiPanel?.widget?.addEventListener('click', () => {
+      (this.tGuiPanel?.widget as any)?.addEventListener('click', () => {
         this.endCredits();
       });
       resolve();
@@ -69,9 +69,7 @@ export class MenuCredits extends GameMenu {
         this.LB_CREDITS.addItem(entry.Value);
       }
     }
-    if(this.LB_CREDITS.offset !== undefined){
-      this.LB_CREDITS.offset = 0;
-    }
+    this.LB_CREDITS.scroll = 0;
   }
 
   update(delta: number = 0){
@@ -82,15 +80,13 @@ export class MenuCredits extends GameMenu {
     const scrollStep = Math.floor(this.scrollOffset);
     if(scrollStep > 0){
       this.scrollOffset -= scrollStep;
-      if(this.LB_CREDITS.offset !== undefined){
-        const maxOffset = Math.max(0, (this.LB_CREDITS.items?.length ?? 0) - 1);
-        this.LB_CREDITS.offset = Math.min(
-          (this.LB_CREDITS.offset || 0) + scrollStep,
-          maxOffset
-        );
-        if(this.LB_CREDITS.offset >= maxOffset){
-          this.endCredits();
-        }
+      const maxScroll = this.LB_CREDITS.maxScroll;
+      this.LB_CREDITS.scroll = Math.min(
+        (this.LB_CREDITS.scroll || 0) + scrollStep,
+        maxScroll
+      );
+      if(this.LB_CREDITS.scroll >= maxScroll && maxScroll > 0){
+        this.endCredits();
       }
     }
   }
