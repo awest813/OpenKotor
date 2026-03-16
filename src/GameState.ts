@@ -569,7 +569,7 @@ export class GameState implements EngineContext {
     GameState.depthTarget.depthTexture.type = THREE.UnsignedShortType;
 
     GameState.clock = new THREE.Clock();
-    GameState.stats = Stats();
+    GameState.stats = new (Stats as any)();
     GameState.stats.showPanel(undefined);
 
     GameState.limiter = {

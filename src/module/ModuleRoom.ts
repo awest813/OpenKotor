@@ -573,7 +573,7 @@ export class ModuleRoom extends ModuleObject {
         continue;
       }
       
-      grassGeometry = BufferGeometryUtils.mergeBufferGeometries([grassGeometry, blade]);
+      grassGeometry = (BufferGeometryUtils as any).mergeBufferGeometries([grassGeometry, blade]);
     }
 
     // Set constraint array for wind effect

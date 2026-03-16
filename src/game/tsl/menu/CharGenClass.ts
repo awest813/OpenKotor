@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { GameState } from "../../../GameState";
 import type { GUILabel, GUIButton } from "../../../gui";
 import { TextureLoader } from "../../../loaders";

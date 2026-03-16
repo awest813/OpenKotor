@@ -1696,7 +1696,7 @@ export class ModuleCreature extends ModuleObject {
           let damageAnim = anims.getByID(damageAnimIndex);
           if(damageAnim && damageAnim.name && this.model?.odysseyAnimationMap?.get(damageAnim.name.toLowerCase().trim())){
             //console.log('dodge/parry anim', this.getName(), damageAnim.name)
-            return damageAnim.name;
+            return OdysseyModelAnimation.GetAnimation2DA(damageAnim.name);
           }
         }
         
@@ -1959,21 +1959,21 @@ export class ModuleCreature extends ModuleObject {
 
   }
 
-  playEvent(event: THREE.Event){
+  playEvent(event: THREE.Event & { event?: string }){
     this.audioEmitter?.setPosition(this.position.x, this.position.y, this.position.z);
     this.footstepEmitter?.setPosition(this.position.x, this.position.y, this.position.z);
     
     const appearance = this.creatureAppearance;
     const rhSounds = this.equipment.RIGHTHAND?.weaponSound;
     const lhSounds = this.equipment.LEFTHAND?.weaponSound;
-    const footstepSounds = GameState.SWRuleSet.footSteps[appearance.footsteptype];
+    const footstepSounds = appearance ? GameState.SWRuleSet.footSteps[appearance.footsteptype] : undefined;
 
     let rhWeaponSoundResRef = '';
     let lhWeaponSoundResRef = '';
     let footstepSoundResRef = '';
     let footstepIsLooping = false;
 
-    switch(event.event){
+    switch(event.event as string){
       case 'snd_footstep':
         if(footstepSounds){
           const isRolling = footstepSounds.isRolling();
@@ -1997,7 +1997,7 @@ export class ModuleCreature extends ModuleObject {
         rhWeaponSoundResRef = rhSounds?.getClashResRef() || '';
       break;
       case 'Hit':
-        if(this.combatData.combatAction && this.combatData.combatAction.hits && this.combatData.combatAction.damage){
+        if(this.combatData.combatAction && this.combatData.combatAction.hits && this.combatData.combatAction.damage && this.combatData.combatAction.target){
           this.combatData.combatAction.target.damage(this.combatData.combatAction.damage, this);
         }
 
@@ -2280,7 +2280,7 @@ export class ModuleCreature extends ModuleObject {
     this.weaponPowered(false);
 
     // Check if all party members are dead → show Game Over screen
-    if(GameState.PartyManager.party.length && GameState.PartyManager.party.every(m => m.isDead())){
+    if(GameState.PartyManager.party.length && GameState.PartyManager.party.every(m => m?.isDead())){
       GameState.MenuManager.MenuGameOver?.open();
     }
 
@@ -3116,7 +3116,7 @@ export class ModuleCreature extends ModuleObject {
   }
 
   getHasSkill(value: number){
-        return (this.skills[value]?.rank > 0) ?? false;
+    return (this.skills[value]?.rank ?? 0) > 0;
   }
 
   getSkillLevel(value: number){
@@ -3423,7 +3423,7 @@ export class ModuleCreature extends ModuleObject {
         try{ this.model.dispose(); }catch(e){}
       }
       
-      model.addEventListener('playEvent', this.playEvent.bind(this));
+      model.addEventListener('playEvent' as any, this.playEvent.bind(this));
 
       this.model = model;
       this.model.userData.moduleObject = this;
@@ -4436,16 +4436,16 @@ export class ModuleCreature extends ModuleObject {
     gff.RootNode.addField( new GFFField(GFFDataType.BYTE, 'Color_Tattoo2') ).setValue(0);
 
     let combatInfoStruct = gff.RootNode.addField( new GFFField(GFFDataType.STRUCT, 'CombatInfo') );
-    combatInfoStruct.addField( new GFFField(GFFDataType.BYTE, 'NumAttacks') ).setValue(this.combatRound.onHandAttacks + this.combatRound.additionalAttacks);
-    combatInfoStruct.addField( new GFFField(GFFDataType.BYTE, 'OnHandAttacks') ).setValue(this.combatRound.onHandAttacks);
-    combatInfoStruct.addField( new GFFField(GFFDataType.BYTE, 'AdditionalAttacks') ).setValue(this.combatRound.additionalAttacks);
-    combatInfoStruct.addField( new GFFField(GFFDataType.BYTE, 'OffHandTaken') ).setValue(this.combatRound.offHandTaken ? 1 : 0);
+    combatInfoStruct.getChildStructs()[0].addField( new GFFField(GFFDataType.BYTE, 'NumAttacks') ).setValue(this.combatRound.onHandAttacks + this.combatRound.additionalAttacks);
+    combatInfoStruct.getChildStructs()[0].addField( new GFFField(GFFDataType.BYTE, 'OnHandAttacks') ).setValue(this.combatRound.onHandAttacks);
+    combatInfoStruct.getChildStructs()[0].addField( new GFFField(GFFDataType.BYTE, 'AdditionalAttacks') ).setValue(this.combatRound.additionalAttacks);
+    combatInfoStruct.getChildStructs()[0].addField( new GFFField(GFFDataType.BYTE, 'OffHandTaken') ).setValue(this.combatRound.offHandTaken ? 1 : 0);
 
     let combatRoundDataStruct = gff.RootNode.addField( new GFFField(GFFDataType.STRUCT, 'CombatRoundData') );
-    combatRoundDataStruct.addField( new GFFField(GFFDataType.BYTE, 'RoundStarted') ).setValue(this.combatRound.roundStarted ? 1 : 0);
-    combatRoundDataStruct.addField( new GFFField(GFFDataType.BYTE, 'Engaged') ).setValue(this.combatRound.engaged ? 1 : 0);
-    combatRoundDataStruct.addField( new GFFField(GFFDataType.FLOAT, 'Timer') ).setValue(this.combatRound.timer);
-    combatRoundDataStruct.addField( new GFFField(GFFDataType.FLOAT, 'RoundLength') ).setValue(this.combatRound.roundLength);
+    combatRoundDataStruct.getChildStructs()[0].addField( new GFFField(GFFDataType.BYTE, 'RoundStarted') ).setValue(this.combatRound.roundStarted ? 1 : 0);
+    combatRoundDataStruct.getChildStructs()[0].addField( new GFFField(GFFDataType.BYTE, 'Engaged') ).setValue(this.combatRound.engaged ? 1 : 0);
+    combatRoundDataStruct.getChildStructs()[0].addField( new GFFField(GFFDataType.FLOAT, 'Timer') ).setValue(this.combatRound.timer);
+    combatRoundDataStruct.getChildStructs()[0].addField( new GFFField(GFFDataType.FLOAT, 'RoundLength') ).setValue(this.combatRound.roundLength);
 
     gff.RootNode.addField( new GFFField(GFFDataType.BYTE, 'Commandable') ).setValue(this.getCommadable() ? 1 : 0);
     gff.RootNode.addField( new GFFField(GFFDataType.BYTE, 'Con') ).setValue(this.con);

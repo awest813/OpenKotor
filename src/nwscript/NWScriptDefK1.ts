@@ -3339,7 +3339,7 @@ NWScriptDefK1.Actions = {
               if(model){
                 model.userData.moduleObject = item;
                 model.name = item.getTag();
-                GameState.group.items.add( item.container );
+                GameState.group.placeables.add( item.container );
                 item.getCurrentRoom();
                 item.onSpawn();
               }
@@ -5823,6 +5823,7 @@ NWScriptDefK1.Actions = {
     }
   },
   419:{
+    comment: "419: Get the object that last pressed the respawn button.\n* Return value on error: OBJECT_INVALID\n",
     name: "GetLastRespawnButtonPresser",
     type: NWScriptDataType.OBJECT,
     args: [],
@@ -7344,8 +7345,8 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleObject)){
-        return args[0].keyRequired ? NW_TRUE : NW_FALSE;
+      if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleDoor) || BitWise.InstanceOfObject(args[0], ModuleObjectType.ModulePlaceable)){
+        return (args[0] as ModuleDoor | ModulePlaceable).keyRequired ? NW_TRUE : NW_FALSE;
       }
       return NW_FALSE;
     }
@@ -7368,8 +7369,8 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleObject)){
-        return args[0].lockable ? NW_TRUE : NW_FALSE;
+      if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleDoor) || BitWise.InstanceOfObject(args[0], ModuleObjectType.ModulePlaceable)){
+        return (args[0] as ModuleDoor | ModulePlaceable).lockable ? NW_TRUE : NW_FALSE;
       }
       return NW_FALSE;
     }
@@ -7380,8 +7381,8 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleObject)){
-        return args[0].openLockDC || 0;
+      if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleDoor) || BitWise.InstanceOfObject(args[0], ModuleObjectType.ModulePlaceable)){
+        return (args[0] as ModuleDoor | ModulePlaceable).openLockDC || 0;
       }
       return 0;
     }
@@ -7392,8 +7393,8 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.INTEGER,
     args: [NWScriptDataType.OBJECT],
     action: function(this: NWScriptInstance, args: [ModuleObject]){
-      if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleObject)){
-        return args[0].closeLockDC || 0;
+      if(BitWise.InstanceOfObject(args[0], ModuleObjectType.ModuleDoor) || BitWise.InstanceOfObject(args[0], ModuleObjectType.ModulePlaceable)){
+        return (args[0] as ModuleDoor | ModulePlaceable).closeLockDC || 0;
       }
       return 0;
     }
@@ -10051,7 +10052,8 @@ NWScriptDefK1.Actions = {
     type: NWScriptDataType.VOID,
     args: [NWScriptDataType.INTEGER],
     action: async function(this: NWScriptInstance, args: [number]){
-      await GameState.VideoManager.playMovieQueue(args[0] === 1);
+      // args[0] = bAllowSeparateSkips (not yet supported); play the queued movies
+      await GameState.VideoManager.playMovieQueue();
     }
   },
   771:{

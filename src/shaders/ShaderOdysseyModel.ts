@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { Shader } from "./Shader";
 
-const odyssey_envmap_fragment = `
+const odyssey_envmap_fragment: string = `
 #ifdef USE_ENVMAP
   #ifdef ENV_WORLDPOS
     vec3 cameraToFrag;
@@ -42,7 +42,7 @@ const odyssey_envmap_fragment = `
   #endif
 #endif`
 
-THREE.ShaderChunk.meshodyssey_vert = `
+(THREE.ShaderChunk as any).meshodyssey_vert = `
 #define PHONG
 varying vec3 vViewPosition;
 #include <common>
@@ -83,7 +83,7 @@ void main() {
   #include <fog_vertex>
 }`;
 
-THREE.ShaderChunk.meshodyssey_frag = `
+(THREE.ShaderChunk as any).meshodyssey_frag = `
 #define PHONG
 
 uniform vec3 diffuse;

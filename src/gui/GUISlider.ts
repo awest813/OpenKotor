@@ -54,7 +54,7 @@ export class GUISlider extends GUIControl{
     this.thumb.mesh = new THREE.Sprite( this.thumb.material );
     this.widget.add(this.thumb.mesh);
 
-    this.thumb.mesh.addEventListener('click', (e) => {
+    this.thumb.mesh.addEventListener('click' as any, (e: any) => {
       console.log('hello');
       this.mouseInside();
     });

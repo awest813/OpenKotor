@@ -1849,7 +1849,7 @@ export class GUIControl {
     if(this.border.geometry instanceof THREE.BufferGeometry)
       this.border.geometry.dispose();
 
-    this.border.geometry = BufferGeometryUtils.mergeBufferGeometries(planes, false);
+    this.border.geometry = (BufferGeometryUtils as any).mergeBufferGeometries(planes, false);
     this.border.geometry.computeBoundingBox();
 
     //Edge Group
@@ -1934,7 +1934,7 @@ export class GUIControl {
     if(this.highlight.geometry instanceof THREE.BufferGeometry)
       this.highlight.geometry.dispose();
 
-    this.highlight.geometry = BufferGeometryUtils.mergeBufferGeometries(planes, false);
+    this.highlight.geometry = (BufferGeometryUtils as any).mergeBufferGeometries(planes, false);
     this.highlight.geometry.computeBoundingBox();
 
     //Edge Group

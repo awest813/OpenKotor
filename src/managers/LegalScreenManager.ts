@@ -33,8 +33,8 @@ export class LegalScreenManager {
     TextureLoader.Load('Legal').then((texture: OdysseyTexture) => {
       this.texture = texture;
       this.material.map = texture;
-      this.width = texture.image.width;
-      this.height = texture.image.height;
+      this.width = (texture.image as HTMLImageElement).width;
+      this.height = (texture.image as HTMLImageElement).height;
       this.aspectRatio = this.width / this.height;
     });
   }

@@ -4982,7 +4982,7 @@ describe('57. K1 blocker matrix – GetItemInSlot/ActionEquipItem slot mapping +
 
   it('ChangeItemCost: no-op when no items match the tag', () => {
     const item = { tag: 'rare_item', cost: 999, getTag(){ return this.tag; } };
-    function changeItemCost(tag: string, newCost: number, inv: typeof [item]): void {
+    function changeItemCost(tag: string, newCost: number, inv: Array<typeof item>): void {
       const cost = Math.round(newCost);
       for(const i of inv){ if(i.getTag() === tag) i.cost = cost; }
     }

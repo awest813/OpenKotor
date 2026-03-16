@@ -448,11 +448,11 @@ export class TPCObject {
           }
         }
         (_texture as any).image = images;
-        _texture.image.width = texDatas.width;
-        _texture.image.height = texDatas.height;
+        (_texture.image as any).width = texDatas.width;
+        (_texture.image as any).height = texDatas.height;
       } else {
-        _texture.image.width = texDatas.width;
-        _texture.image.height = texDatas.height;
+        (_texture.image as any).width = texDatas.width;
+        (_texture.image as any).height = texDatas.height;
         _texture.mipmaps = texDatas.mipmaps;
       }
     // }
