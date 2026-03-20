@@ -397,7 +397,7 @@ KotOR.js uses **Jest** with `ts-jest` for its test suite.
 npm run test
 ```
 
-This runs all 12 test files (1092 tests total at the time of this README update) and generates a coverage report in `./coverage/`.
+This runs the full Jest test suite and generates a coverage report in `./coverage/`.
 
 ### Run Tests Without Coverage (faster)
 
