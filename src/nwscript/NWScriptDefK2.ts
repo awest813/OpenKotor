@@ -3,7 +3,7 @@ import { ModuleObjectScript, ModuleObjectType } from "../enums";
 import { ModuleCreatureAnimState } from "../enums/module/ModuleCreatureAnimState";
 import { NWScriptDataType } from "../enums/nwscript/NWScriptDataType";
 import { GameState } from "../GameState";
-import type { ModuleCreature, ModuleObject } from "../module";
+import type { ModuleCreature, ModuleDoor, ModuleObject, ModulePlaceable } from "../module";
 import { BitWise } from "../utility/BitWise";
 import { NW_FALSE, NW_TRUE } from "./NWScriptConstants";
 import { NWScriptDef } from "./NWScriptDef";
@@ -13,6 +13,8 @@ import { FeedbackMessageEntry } from "../engine/FeedbackMessageEntry";
 import EngineLocation from "../engine/EngineLocation";
 import { EngineMode } from "../enums/engine/EngineMode";
 import { ActionParameterType } from "../enums/actions/ActionParameterType";
+import { GameEffectSetStateType } from "../enums/effects/GameEffectSetStateType";
+import type { GameEffect } from "../effects/GameEffect";
 
 /**
  * NWScriptDefK2 class.
@@ -5617,36 +5619,68 @@ NWScriptDefK2.Actions = {
     name: 'EffectFury',
     type: NWScriptDataType.EFFECT,
     args: [],
-    action: undefined
+    action: function(this: NWScriptInstance, args: []){
+      const effect = new GameState.GameEffectFactory.EffectSetState();
+      effect.setCreator(this.caller);
+      effect.setSpellId(this.getSpellId());
+      effect.setInt(0, GameEffectSetStateType.FURY);
+      return effect.initialize();
+    }
   },
   778: {
     comment: 'DJS-OEI 1/3/2004\n778: Create a Blind effect.',
     name: 'EffectBlind',
     type: NWScriptDataType.EFFECT,
     args: [],
-    action: undefined
+    action: function(this: NWScriptInstance, args: []){
+      const effect = new GameState.GameEffectFactory.EffectSetState();
+      effect.setCreator(this.caller);
+      effect.setSpellId(this.getSpellId());
+      effect.setInt(0, GameEffectSetStateType.BLIND);
+      return effect.initialize();
+    }
   },
   779: {
     comment: 'DJS-OEI 1/4/2004\n779: Create an FP regeneration modifier effect.',
     name: 'EffectFPRegenModifier',
     type: NWScriptDataType.EFFECT,
     args: [ NWScriptDataType.INTEGER ],
-    action: undefined
+    action: function(this: NWScriptInstance, args: [number]){
+      const effect = new GameState.GameEffectFactory.EffectRegenerate();
+      effect.setCreator(this.caller);
+      effect.setSpellId(this.getSpellId());
+      effect.setInt(0, args[0]); // amount per interval
+      effect.setInt(1, 6);       // 6-second interval
+      effect.setInt(4, 54);      // 54 = force point healing
+      return effect.initialize();
+    }
   },
   780: {
     comment: 'DJS-OEI 1/4/2004\n780: Create a VP regeneration modifier effect.',
     name: 'EffectVPRegenModifier',
     type: NWScriptDataType.EFFECT,
     args: [ NWScriptDataType.INTEGER ],
-    action: undefined
+    action: function(this: NWScriptInstance, args: [number]){
+      const effect = new GameState.GameEffectFactory.EffectRegenerate();
+      effect.setCreator(this.caller);
+      effect.setSpellId(this.getSpellId());
+      effect.setInt(0, args[0]); // amount per interval
+      effect.setInt(1, 6);       // 6-second interval
+      return effect.initialize();
+    }
   },
   781: {
     comment: 'DJS-OEI 1/9/2004\n781: Create a Force Crush effect.',
     name: 'EffectCrush',
     type: NWScriptDataType.EFFECT,
     args: [],
-    action: undefined
-  },
+    action: function(this: NWScriptInstance, args: []){
+      const effect = new GameState.GameEffectFactory.EffectSetState();
+      effect.setCreator(this.caller);
+      effect.setSpellId(this.getSpellId());
+      effect.setInt(0, GameEffectSetStateType.FORCE_CRUSH);
+      return effect.initialize();
+    },
   782: {
     comment: 'FAK - OEI 1/12/04\n782: Minigame grabs a swoop bike upgrade',
     name: 'SWMG_GetSwoopUpgrade',

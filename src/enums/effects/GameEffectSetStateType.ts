@@ -19,4 +19,9 @@ export enum GameEffectSetStateType {
   CUT_SCENE_HORRIFIED = 8,
   FORCEPUSH = 9,
   WHIRLWIND = 10,
+  FURY = 11,
+  BLIND = 12,
+  FORCE_CRUSH = 13,
+  MIND_TRICK = 16,
+  DROID_SCRAMBLE = 17,
 }
