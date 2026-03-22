@@ -4,12 +4,16 @@ import { ActionStatus } from "../enums/actions/ActionStatus";
 import { ActionType } from "../enums/actions/ActionType";
 import { ModuleObjectType } from "../enums/module/ModuleObjectType";
 import { ModuleTriggerType } from "../enums/module/ModuleTriggerType";
+import { SkillType } from "../enums/nwscript/SkillType";
 import { ResourceLoader } from "../loaders/ResourceLoader";
+import type { ModuleCreature } from "../module/ModuleCreature";
 import type { ModuleObject } from "../module/ModuleObject";
 import type { ModuleTrigger } from "../module/ModuleTrigger";
 import { GFFObject } from "../resource/GFFObject";
 import { ResourceTypes } from "../resource/ResourceTypes";
 import { BitWise } from "../utility/BitWise";
+import { Dice } from "../utility/Dice";
+import { DiceType } from "../enums/utility/DiceType";
 import { Utility } from "../utility/Utility";
 import { Action } from "./Action";
 
@@ -66,7 +70,15 @@ export class ActionRecoverMine extends Action {
           return ActionStatus.FAILED;
         }
 
-        //todo: recover skill check
+        //recover skill check: demolitions vs trap's disarm DC
+        const trapRow = GameState.TwoDAManager.datatables.get('traps')?.rows[trap.trapType];
+        const disarmDC = trapRow ? parseInt(trapRow.disarm_dc ?? '15') : 15;
+        const creature = this.owner as ModuleCreature;
+        const demolitionsModifier = creature.getSkillModifier(SkillType.DEMOLITIONS);
+        const d20Roll = Dice.roll(1, DiceType.d20);
+        if(d20Roll + demolitionsModifier < disarmDC){
+          return ActionStatus.FAILED;
+        }
 
         trap.destroy();
         const buffer = ResourceLoader.loadCachedResource(ResourceTypes['utp'], trap.trapResRef);
