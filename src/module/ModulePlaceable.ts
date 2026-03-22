@@ -1067,43 +1067,43 @@ export class ModulePlaceable extends ModuleObject {
     if(animations2DA){
       switch( animation_constant ){
         case ModulePlaceableAnimState.DEFAULT:        //10000, //304 - 
-          return animations2DA.rows[304];
+          return animations2DA.rows[304] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.DAMAGE:         //10014, //305 - damage
-          return animations2DA.rows[305];
+          return animations2DA.rows[305] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.DEAD: 	        //10072, //307
-          return animations2DA.rows[307];
+          return animations2DA.rows[307] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ACTIVATE: 	    //10073, //308 - NWSCRIPT Constant: 200
-          return animations2DA.rows[308];
+          return animations2DA.rows[308] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.DEACTIVATE:     //10074, //309 - NWSCRIPT Constant: 201
-          return animations2DA.rows[309];
+          return animations2DA.rows[309] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.OPEN: 			    //10075, //310 - NWSCRIPT Constant: 202
-          return animations2DA.rows[310];
+          return animations2DA.rows[310] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.CLOSE:          //10076, //311 - NWSCRIPT Constant: 203
-          return animations2DA.rows[311];
+          return animations2DA.rows[311] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.CLOSE_OPEN: 	  //10077, //312
-          return animations2DA.rows[312];
+          return animations2DA.rows[312] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.OPEN_CLOSE:     //10078, //313
-          return animations2DA.rows[313];
+          return animations2DA.rows[313] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP01:     //10106, //316 - NWSCRIPT Constant: 204
-          return animations2DA.rows[316];
+          return animations2DA.rows[316] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP02:     //10107, //317 - NWSCRIPT Constant: 205
-          return animations2DA.rows[317];
+          return animations2DA.rows[317] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP03:     //10108, //318 - NWSCRIPT Constant: 206
-          return animations2DA.rows[318];
+          return animations2DA.rows[318] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP04:     //10110, //319 - NWSCRIPT Constant: 207
-          return animations2DA.rows[319];
+          return animations2DA.rows[319] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP05:     //10111, //320 - NWSCRIPT Constant: 208
-          return animations2DA.rows[320];
+          return animations2DA.rows[320] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP06:     //10112, //321 - NWSCRIPT Constant: 209
-          return animations2DA.rows[321];
+          return animations2DA.rows[321] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP07:     //10113, //322 - NWSCRIPT Constant: 210
-          return animations2DA.rows[322];
+          return animations2DA.rows[322] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP08:     //10114, //323 - NWSCRIPT Constant: 211
-          return animations2DA.rows[323];
+          return animations2DA.rows[323] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP09:     //10115, //324 - NWSCRIPT Constant: 212
-          return animations2DA.rows[324];
+          return animations2DA.rows[324] ?? super.animationConstantToAnimation(animation_constant);
         case ModulePlaceableAnimState.ANIMLOOP10:     //10116, //325 - NWSCRIPT Constant: 213 
-          return animations2DA.rows[325];
+          return animations2DA.rows[325] ?? super.animationConstantToAnimation(animation_constant);
       }
 
       return super.animationConstantToAnimation( animation_constant );
