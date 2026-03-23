@@ -10,7 +10,7 @@
 export class Shader {
   fragment: string;
   vertex: string;
-  uniforms: any[] = [];
+  uniforms: any = [];
   name: string;
 
   getVertex(){
@@ -21,7 +21,7 @@ export class Shader {
     return this.fragment;
   }
 
-  getUniforms(): any[] {
+  getUniforms(): any {
     return this.uniforms;
   }
 }

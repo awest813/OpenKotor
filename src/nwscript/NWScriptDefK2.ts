@@ -5680,7 +5680,8 @@ NWScriptDefK2.Actions = {
       effect.setSpellId(this.getSpellId());
       effect.setInt(0, GameEffectSetStateType.FORCE_CRUSH);
       return effect.initialize();
-    },
+    }
+  },
   782: {
     comment: 'FAK - OEI 1/12/04\n782: Minigame grabs a swoop bike upgrade',
     name: 'SWMG_GetSwoopUpgrade',
