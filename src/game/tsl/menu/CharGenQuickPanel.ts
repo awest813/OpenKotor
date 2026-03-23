@@ -1,6 +1,8 @@
 import { CurrentGame } from "../../../engine/CurrentGame";
+import { GameEngineType } from "../../../enums/engine";
 import { GameState } from "../../../GameState";
 import type { GUILabel, GUIButton, GUIControl } from "../../../gui";
+import { getStartingModuleDestination } from "../../startingModule";
 import { CharGenQuickPanel as K1_CharGenQuickPanel } from "../../kotor/KOTOR";
 
 /**
@@ -63,8 +65,9 @@ export class CharGenQuickPanel extends K1_CharGenQuickPanel {
         GameState.PartyManager.PlayerTemplate = selectedCreature.save();
         GameState.PartyManager.ActualPlayerTemplate = GameState.PartyManager.PlayerTemplate;
         GameState.PartyManager.AddPortraitToOrder(selectedCreature.getPortraitResRef());
+        const destination = getStartingModuleDestination(GameState.GameKey ?? GameEngineType.TSL);
         CurrentGame.InitGameInProgressFolder(true).then( () => {
-          GameState.LoadModule('001EBO');
+          GameState.LoadModule(destination.module, destination.waypoint ?? null);
         }).catch((error: any) => {
           console.error('TSL CharGenQuickPanel: failed to initialize game-in-progress folder', error);
         });
