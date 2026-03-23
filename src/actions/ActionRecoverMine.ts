@@ -13,7 +13,7 @@ import { GFFObject } from "../resource/GFFObject";
 import { ResourceTypes } from "../resource/ResourceTypes";
 import { BitWise } from "../utility/BitWise";
 import { Dice } from "../utility/Dice";
-import { DiceType } from "../enums/utility/DiceType";
+import { DiceType } from "../enums/combat/DiceType";
 import { Utility } from "../utility/Utility";
 import { Action } from "./Action";
 

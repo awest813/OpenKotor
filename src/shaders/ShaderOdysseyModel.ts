@@ -40,7 +40,7 @@ const odyssey_envmap_fragment: string = `
   #elif defined( ENVMAP_BLENDING_ADD )
     outgoingLight += (envColor.xyz * specularStrength * reflectivity) * (1.0 - diffuseColor.a); //odyssey uses the alpha of the texture to blend the envmap
   #endif
-#endif`
+#endif`;
 
 (THREE.ShaderChunk as any).meshodyssey_vert = `
 #define PHONG
@@ -577,7 +577,7 @@ export class ShaderOdysseyModel extends Shader {
     // this.vertex = THREE.ShaderChunk.meshodyssey_vert;
     // this.fragment = THREE.ShaderChunk.meshodyssey_frag;
 
-    this.uniforms = [
+    this.uniforms = THREE.UniformsUtils.merge([
       THREE.ShaderLib.phong.uniforms,
       { diffuse: { value: new THREE.Color() } },
       { selfIllumColor: { value: new THREE.Color() } },
@@ -595,8 +595,8 @@ export class ShaderOdysseyModel extends Shader {
         position: {},
         decay: {},
         distance: {}
-      } } },
-    ];
+      } } as any },
+    ]);
 
   }
 

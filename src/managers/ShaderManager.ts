@@ -27,10 +27,11 @@ export class ShaderManager {
   static Shaders: Map<string, Shader> = new Map();
 
   static AddShader(shader: Shader){
+    const shaderUniforms = shader.getUniforms();
     THREE.ShaderLib[shader.name] = {
       fragmentShader: shader.getFragment(),
       vertexShader: shader.getVertex(),
-      uniforms: THREE.UniformsUtils.merge(shader.getUniforms())
+      uniforms: Array.isArray(shaderUniforms) ? THREE.UniformsUtils.merge(shaderUniforms) : shaderUniforms
     };
     ShaderManager.Shaders.set(shader.name, shader);
   }
