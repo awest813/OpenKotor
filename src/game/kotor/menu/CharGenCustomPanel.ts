@@ -1,5 +1,7 @@
 import { CurrentGame } from "../../../engine/CurrentGame";
+import { GameEngineType } from "../../../enums/engine";
 import { GameState } from "../../../GameState";
+import { getStartingModuleDestination } from "../../startingModule";
 import { GameMenu } from "../../../gui";
 import type { GUIControl, GUILabel, GUIButton } from "../../../gui";
 
@@ -96,8 +98,9 @@ export class CharGenCustomPanel extends GameMenu {
         GameState.PartyManager.PlayerTemplate = selectedCreature.save();
         GameState.PartyManager.ActualPlayerTemplate = GameState.PartyManager.PlayerTemplate;
         GameState.PartyManager.AddPortraitToOrder(selectedCreature.getPortraitResRef());
+        const destination = getStartingModuleDestination(GameState.GameKey ?? GameEngineType.KOTOR);
         CurrentGame.InitGameInProgressFolder(true).then( () => {
-          GameState.LoadModule('end_m01aa');
+          GameState.LoadModule(destination.module, destination.waypoint ?? null);
         }).catch((error: any) => {
           console.error('CharGenCustomPanel: failed to initialize game-in-progress folder', error);
         });
